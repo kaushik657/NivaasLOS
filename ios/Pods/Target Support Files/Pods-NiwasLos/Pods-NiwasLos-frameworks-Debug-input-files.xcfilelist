@@ -1,0 +1,9 @@
+${PODS_ROOT}/Target Support Files/Pods-NiwasLos/Pods-NiwasLos-frameworks.sh
+${BUILT_PRODUCTS_DIR}/FMDB/FMDB.framework
+${BUILT_PRODUCTS_DIR}/MobileSync/MobileSync.framework
+${BUILT_PRODUCTS_DIR}/SQLCipher/SQLCipher.framework
+${BUILT_PRODUCTS_DIR}/SalesforceAnalytics/SalesforceAnalytics.framework
+${BUILT_PRODUCTS_DIR}/SalesforceSDKCommon/SalesforceSDKCommon.framework
+${BUILT_PRODUCTS_DIR}/SalesforceSDKCore/SalesforceSDKCore.framework
+${BUILT_PRODUCTS_DIR}/SmartStore/SmartStore.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes

@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-force/ios/SalesforceReact/SFSmartStoreReactBridge.h
