@@ -4,7 +4,7 @@ import AppNavigator, { ScreenNames } from "./AppNavigator";
 import Toast from "react-native-toast-message";
 
 const linking = {
-  prefixes: ["shubhma_shf://"],
+  prefixes: ["niwas_los://"],
   config: {
     screens: {
       Dashboard: "dashboard",
