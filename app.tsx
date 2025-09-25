@@ -24,96 +24,65 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import React from 'react';
-import {
-    StyleSheet,
-    Text,
-    View,
-    FlatList,
-} from 'react-native';
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { oauth, net } from 'react-native-force';
-
-interface Response {
-    records: Record[]
-}
-
-interface Record {
-    Id: String,
-    Name: String
-}
-
-interface Props {
-}
-
-interface State {
-    data : Record[]
-}
-
-class ContactListScreen extends React.Component<Props, State> {
-    constructor(props:Props) {
-        super(props);
-        this.state = {data: []};
-    }
-
-    componentDidMount() {
-        var that = this;
-        oauth.getAuthCredentials(
-            () => that.fetchData(), // already logged in
-            () => {
-                oauth.authenticate(
-                    () => that.fetchData(),
-                    (error) => console.log('Failed to authenticate:' + error)
-                );
-            });
-    }
-
-    fetchData() {
-        var that = this;
-        net.query('SELECT Id, Name FROM Contact LIMIT 100',
-                  (response:Response) => that.setState({data: response.records}),
-                  (error) => console.log('Failed to query:' + error)
-                 );
-    }
-
-    render() {
-        return (
-            <View style={styles.container}>
-              <FlatList
-                data={this.state.data}
-                renderItem={({item}) => <Text style={styles.item}>{item.Name}</Text>}
-                keyExtractor={(item, index) => 'key_' + index}
-              />
-            </View>
-        );
-    }
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingTop: 22,
-        backgroundColor: 'white',
-    },
-    item: {
-        padding: 10,
-        fontSize: 18,
-        height: 44,
-    }
-});
-
-const Stack = createStackNavigator();
+import React, { useEffect } from "react";
+import { StyleSheet, Text, View, FlatList, Button } from "react-native";
+import { oauth, net } from "react-native-force";
+import RootNavigator from "./src/navigation/RootNavigator";
+import GlobalConfig from "./src/utils/Configs";
+import { saveAuthToken } from "./src/services/Keychain";
 
 function App(): JSX.Element {
-    return (
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen name="Mobile SDK Sample App" component={ContactListScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-    );
+  const [accessToken, setAccessToken] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    async function getAuthCredentials() {
+      oauth.getAuthCredentials(
+        async (credentials) => {
+          // <-- credentials parameter here
+          console.log(credentials);
+
+          console.log("Access Token:", credentials.accessToken);
+          GlobalConfig.instanceUrl = credentials.instanceUrl;
+          console.log(GlobalConfig.instanceUrl);
+          setAccessToken(credentials.accessToken);
+          await saveAuthToken(credentials.accessToken);
+          //fetchData(); // your existing logic
+        },
+        () => {
+          oauth.authenticate(
+            async (credentials) => {
+              // <-- credentials parameter here too
+              console.log("Access Token:", credentials.accessToken);
+              console.log("instance url:", credentials.instanceUrl);
+              GlobalConfig.instanceUrl = credentials.instanceUrl;
+              setAccessToken(credentials.accessToken);
+              await saveAuthToken(credentials.accessToken);
+              //  that.fetchData();
+            },
+            (error) => console.log("Failed to authenticate: " + error)
+          );
+        }
+      );
+    }
+    getAuthCredentials();
+  }, []);
+
+  return <>{accessToken && <RootNavigator />}</>;
 }
+
+// --- Styles ---
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 22,
+    backgroundColor: "white",
+    alignItems: "center",
+  },
+  item: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+  },
+});
 
 export default App;
