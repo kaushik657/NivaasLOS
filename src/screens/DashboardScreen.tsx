@@ -117,13 +117,13 @@ const DashboardScreen = ({ navigation }: Props) => {
           <Text>Click Generate to create the application form.</Text>
         </CustomDropdown>
         <TouchableOpacity
-          onPress={() => navigation.navigate(ScreenNames.FACE_MATCH)}
+          onPress={() => navigation.navigate(ScreenNames.ROUTE_PLAN)}
           style={[
             styles.eVerificationButton,
             { alignSelf: "center", marginBottom: verticalScale(10) },
           ]}
         >
-          <Text style={styles.eVerificationButtonText}>Initiate</Text>
+          <Text style={styles.eVerificationButtonText}>Route Plan</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
