@@ -1,5 +1,5 @@
 export type AppStackParamList = {
     Home: undefined;
-    Profile: { userId: string };
+    Lead: { leadId: string };
     Orders: { orderId: string };
   };
