@@ -1,109 +1,135 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
+  SafeAreaView,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
-import NearestLeadNavigator from "../services/location/NearestLeadNavigator";
+import {
+  requestLocationPermission,
+  getCurrentLocation,
+  getDistancesFromUser,
+  openGoogleMapsNavigation,
+  openGoogleMapsWithMarkers,
+} from "../services/location/LocationHelper";
 
-type Meeting = {
-  id: number;
-  name: string;
-  type: string;
-  time: string;
-};
-
-type RouteData = {
-  totalDistance: string;
-  estimatedTime: string;
-  meetings: Meeting[];
-};
-
-// JSON Data
-const routeData: RouteData = {
-  totalDistance: "1434.3 km",
-  estimatedTime: "73 hr 3 min",
+const routeData = {
   meetings: [
-    { id: 1, name: "Neha Verma", type: "Followup", time: "2:45 PM" },
+    {
+      id: 1,
+      name: "Neha Verma",
+      type: "Followup",
+      time: "2:45 PM",
+      latitude: 28.6139,
+      longitude: 77.209, // Delhi
+    },
     {
       id: 2,
       name: "Premier Industries Corp",
       type: "Followup",
       time: "9:00 AM",
+      latitude: 28.4595,
+      longitude: 77.0266, // Gurgaon
     },
-    { id: 3, name: "Sanjay Sharma", type: "Meeting", time: "4:45 PM" },
+    {
+      id: 3,
+      name: "Sanjay Sharma",
+      type: "Meeting",
+      time: "4:45 PM",
+      latitude: 28.4089,
+      longitude: 77.3178, // Faridabad
+    },
     {
       id: 4,
       name: "Premier Industries Pvt Ltd",
       type: "Call",
       time: "9:30 AM",
+      latitude: 28.9845,
+      longitude: 77.7064, // Meerut
     },
   ],
 };
 
 const RoutePlanScreen = ({ navigation }: any) => {
-  const handleClose = () => {
-    navigation.goBack();
+  const [loading, setLoading] = useState(false);
+
+  // const handleStartNavigation = async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     // 1. Request permission
+  //     const granted = await requestLocationPermission();
+  //     if (!granted) {
+  //       alert("Location permission denied.");
+  //       return;
+  //     }
+
+  //     // 2. Get current user location
+  //     const userLocation = await getCurrentLocation();
+
+  //     // 3. Skip distance calculation, just open Google Maps
+  //     openGoogleMapsWithMarkers(userLocation, routeData.meetings);
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert("Unable to open maps. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleStartNavigation = async () => {
+    try {
+      setLoading(true);
+
+      const granted = await requestLocationPermission();
+      if (!granted) {
+        alert("Location permission denied.");
+        return;
+      }
+
+      const userLocation = await getCurrentLocation();
+
+      openGoogleMapsWithMarkers(userLocation, routeData.meetings);
+    } catch (error) {
+      console.error(error);
+      alert("Unable to open map. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.card}>
-        {/* Header Section */}
         <Text style={styles.title}>Optimized Route Plan</Text>
-        <Text style={styles.subtitle}>
-          The most efficient route to visit your scheduled meetings.
-        </Text>
 
-        {/* Summary Section */}
-        <View style={styles.summary}>
-          <View>
-            <Text style={styles.label}>Total Distance</Text>
-            <Text style={styles.value}>{routeData.totalDistance}</Text>
-          </View>
-          <View>
-            <Text style={styles.label}>Estimated Time</Text>
-            <Text style={styles.value}>{routeData.estimatedTime}</Text>
-          </View>
-        </View>
+        <FlatList
+          data={routeData.meetings}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.meetingItem}>
+              <Text style={styles.meetingName}>{item.name}</Text>
+              <Text style={styles.meetingDetails}>
+                {item.type} • {item.time}
+              </Text>
+            </View>
+          )}
+        />
 
-        {/* Meetings List */}
-        <View style={styles.meetingContainer}>
-          <Text style={styles.listTitle}>Optimized Meeting Order</Text>
-          <FlatList
-            data={routeData.meetings}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item, index }) => (
-              <View style={styles.meetingItem}>
-                <View style={styles.circle}>
-                  <Text style={styles.circleText}>{index + 1}</Text>
-                </View>
-                <View style={styles.meetingInfo}>
-                  <Text style={styles.meetingName}>{item.name}</Text>
-                  <Text style={styles.meetingDetails}>
-                    {item.type} • {item.time}
-                  </Text>
-                </View>
-              </View>
-            )}
-            contentContainerStyle={{ paddingVertical: 10 }}
-          />
-        </View>
-
-        {/* Note Section */}
-        <Text style={styles.note}>
-          Note: This is an approximate route based on straight-line distances.
-          Actual travel times may vary based on traffic and road conditions.
-        </Text>
-
-        {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Text style={styles.closeButtonText}>Close</Text>
+        <TouchableOpacity
+          style={styles.startButton}
+          onPress={handleStartNavigation}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.startButtonText}>Start Navigation</Text>
+          )}
         </TouchableOpacity>
-        {/* <NearestLeadNavigator /> */}
       </View>
     </SafeAreaView>
   );
@@ -114,7 +140,7 @@ export default RoutePlanScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.05)",
+    backgroundColor: "#f3f4f6",
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
@@ -135,90 +161,31 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111827",
     textAlign: "center",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  summary: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 12,
-    color: "#6B7280",
-  },
-  value: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#111827",
-    marginTop: 2,
-  },
-  meetingContainer: {
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    padding: 12,
     marginBottom: 16,
   },
-  listTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
   meetingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  circle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  circleText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#374151",
-  },
-  meetingInfo: {
-    flex: 1,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
   },
   meetingName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "500",
     color: "#111827",
   },
   meetingDetails: {
     fontSize: 12,
-    color: "#6B7280",
+    color: "#6b7280",
     marginTop: 2,
   },
-  note: {
-    fontSize: 12,
-    color: "#9CA3AF",
-    textAlign: "center",
-    marginBottom: 16,
-    lineHeight: 18,
-  },
-  closeButton: {
+  startButton: {
     backgroundColor: "#2563EB",
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
+    marginTop: 20,
   },
-  closeButtonText: {
+  startButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
