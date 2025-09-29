@@ -27,7 +27,7 @@ export default function AppNavigator() {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName={ScreenNames.DASHBOARD}
+      initialRouteName={ScreenNames.ROUTE_PLAN}
     >
       <Stack.Screen name={ScreenNames.DASHBOARD} component={DashboardScreen} />
       <Stack.Screen
