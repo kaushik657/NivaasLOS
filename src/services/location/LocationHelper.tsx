@@ -180,19 +180,19 @@ export const openGoogleMapsWithMarkers = async (
   meetings: { latitude: number; longitude: number; name?: string }[]
 ) => {
   try {
+    if (!meetings.length) return;
+
     const baseUrl = "https://www.google.com/maps/dir/?api=1";
 
-    // Set origin as user's location
     const origin = `${userLocation.latitude},${userLocation.longitude}`;
+    const destination = `${meetings[meetings.length - 1].latitude},${
+      meetings[meetings.length - 1].longitude
+    }`;
 
-    // Destination: first meeting (required by Google Maps URL)
-    const destination = `${meetings[0].latitude},${meetings[0].longitude}`;
-
-    // Waypoints: rest of meetings
     const waypoints =
       meetings.length > 1
         ? meetings
-            .slice(1)
+            .slice(0, meetings.length - 1) // all except last
             .map((m) => `${m.latitude},${m.longitude}`)
             .join("|")
         : "";

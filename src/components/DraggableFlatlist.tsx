@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { FlatList, View, PanResponder, StyleSheet } from "react-native";
 
 interface DraggableFlatListProps<T> {
@@ -20,47 +20,47 @@ export const DraggableFlatList = <T,>({
   itemHeight,
   onDragEnd,
 }: DraggableFlatListProps<T>) => {
-  const [listData, setListData] = useState(data);
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
-  const dragY = React.useRef(0);
+  const draggingIndex = useRef<number | null>(null);
 
   const createPanResponder = (index: number) =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => setDraggingIndex(index),
+      onPanResponderGrant: () => {
+        draggingIndex.current = index;
+      },
       onPanResponderMove: (_, gestureState) => {
-        dragY.current = gestureState.dy;
+        if (draggingIndex.current === null) return;
 
-        const newIndex = Math.min(
-          listData.length - 1,
+        const fromIndex = draggingIndex.current;
+        const toIndex = Math.min(
+          data.length - 1,
           Math.max(
             0,
-            Math.floor((index * itemHeight + gestureState.dy) / itemHeight)
+            Math.floor((fromIndex * itemHeight + gestureState.dy) / itemHeight)
           )
         );
 
-        if (newIndex !== index) {
-          const updated = [...listData];
-          const [removed] = updated.splice(index, 1);
-          updated.splice(newIndex, 0, removed);
-          setListData(updated);
-          setDraggingIndex(newIndex);
+        if (fromIndex !== toIndex) {
+          const updated = [...data];
+          const [moved] = updated.splice(fromIndex, 1);
+          updated.splice(toIndex, 0, moved);
+          draggingIndex.current = toIndex;
+          onDragEnd && onDragEnd(updated); // continuously update parent
         }
       },
       onPanResponderRelease: () => {
-        setDraggingIndex(null);
-        onDragEnd && onDragEnd(listData);
+        draggingIndex.current = null;
       },
       onPanResponderTerminate: () => {
-        setDraggingIndex(null);
-        onDragEnd && onDragEnd(listData);
+        draggingIndex.current = null;
       },
     });
 
   const renderDraggableItem = ({ item, index }: { item: T; index: number }) => {
-    const isDragging = draggingIndex === index;
+    const isDragging = draggingIndex.current === index;
     const panResponder = createPanResponder(index);
+
     return (
       <View
         style={isDragging ? styles.draggingItem : undefined}
@@ -73,7 +73,7 @@ export const DraggableFlatList = <T,>({
 
   return (
     <FlatList
-      data={listData}
+      data={data}
       keyExtractor={keyExtractor}
       renderItem={renderDraggableItem}
       scrollEnabled={false}

@@ -46,8 +46,22 @@ const initialData = [
 const ITEM_HEIGHT = 70;
 const { width } = Dimensions.get("window");
 
+function generateColors(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const hue = (i * 360) / count;
+    return `hsl(${hue}, 70%, 50%)`;
+  });
+}
+
 export default function RoutePlanScreen() {
-  const [meetings, setMeetings] = useState(initialData);
+  const [meetings, setMeetings] = useState(() => {
+    const colors = generateColors(initialData.length);
+    return initialData.map((item, index) => ({
+      ...item,
+      color: colors[index],
+    }));
+  });
+
   const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
 
   useEffect(() => {
@@ -59,12 +73,19 @@ export default function RoutePlanScreen() {
     })();
   }, []);
 
+  useEffect(() => {
+    const colors = generateColors(meetings.length);
+    setMeetings((prev) => prev.map((m, i) => ({ ...m, color: colors[i] })));
+  }, [meetings.length]);
+
   const handleStartNavigation = async () => {
     if (!currentLocation) return;
+
+    // Use the draggable order directly
     openGoogleMapsWithMarkers(currentLocation, meetings);
   };
 
-  // Calculate center and delta to fit all markers
+  // Map region calculation
   const allPoints = currentLocation
     ? [
         ...meetings,
@@ -95,47 +116,49 @@ export default function RoutePlanScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>Optimized Route Plan</Text>
 
-        {/* Map Preview */}
         <View style={styles.mapWrapper}>
-          <View style={styles.mapContainer}>
-            <MapView
-              style={styles.map}
-              region={mapRegion}
-              scrollEnabled={false}
-              zoomEnabled={false}
-              rotateEnabled={false}
-              pitchEnabled={false}
-            >
-              {currentLocation && (
-                <Marker
-                  coordinate={currentLocation}
-                  title="You are here"
-                  pinColor="blue"
-                />
-              )}
-              {meetings.map((meeting) => (
-                <Marker
-                  key={meeting.id}
-                  coordinate={{
-                    latitude: meeting.latitude,
-                    longitude: meeting.longitude,
-                  }}
-                  title={meeting.name}
-                  description={`${meeting.type} • ${meeting.time}`}
-                />
-              ))}
-            </MapView>
-          </View>
+          <MapView
+            style={styles.map}
+            region={mapRegion}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}
+            pitchEnabled={false}
+          >
+            {currentLocation && (
+              <Marker
+                coordinate={currentLocation}
+                title="You are here"
+                pinColor="blue"
+              />
+            )}
+
+            {meetings.map((meeting) => (
+              <Marker
+                key={meeting.id}
+                coordinate={{
+                  latitude: meeting.latitude,
+                  longitude: meeting.longitude,
+                }}
+                title={meeting.name}
+                description={`${meeting.type} • ${meeting.time}`}
+                pinColor={meeting.color}
+              />
+            ))}
+          </MapView>
         </View>
 
-        {/* Draggable list */}
         <DraggableFlatList
-          data={meetings}
+          data={meetings} // fully controlled
           itemHeight={ITEM_HEIGHT}
           keyExtractor={(item) => item.id.toString()}
           renderItem={(item, index, isDragging) => (
             <View
-              style={[styles.meetingItem, isDragging && styles.draggingItem]}
+              style={[
+                styles.meetingItem,
+                { borderLeftColor: item.color },
+                isDragging && styles.draggingItem,
+              ]}
             >
               <Text style={styles.meetingName}>{item.name}</Text>
               <Text style={styles.meetingDetails}>
@@ -143,7 +166,7 @@ export default function RoutePlanScreen() {
               </Text>
             </View>
           )}
-          onDragEnd={(newData) => setMeetings(newData)}
+          onDragEnd={(updated) => setMeetings(updated)} // continuously update meetings
         />
 
         <View style={styles.buttonWrapper}>
@@ -176,9 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: 16,
-    backgroundColor: "#f0f0f0",
   },
-  mapContainer: { flex: 1 },
   map: { ...StyleSheet.absoluteFillObject },
   meetingItem: {
     height: ITEM_HEIGHT,
@@ -190,6 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
     borderRadius: 8,
     marginVertical: 4,
+    borderLeftWidth: 6,
   },
   draggingItem: { backgroundColor: "#dbeafe" },
   meetingName: { fontSize: 16, fontWeight: "500" },
