@@ -18,6 +18,10 @@
 		android:manageSpaceActivity="com.salesforce.androidsdk.ui.ManageSpaceActivity"
 		android:usesCleartextTraffic="true">
 
+            <meta-data
+      android:name="com.google.android.geo.API_KEY"
+      android:value="AIzaSyC1-MUz0bX_Bp_CXU97mm4Nmyf-Hj95rYw"/>
+
 		<!-- Launcher screen -->
 		<activity android:name=".MainActivity"
 		    android:label="@string/app_name"

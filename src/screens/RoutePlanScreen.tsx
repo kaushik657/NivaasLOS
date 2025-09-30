@@ -1,11 +1,6 @@
-import React, { useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { SafeAreaView, View, Text, StyleSheet, Dimensions } from "react-native";
+import MapView, { Marker, LatLng } from "react-native-maps";
 import { DraggableFlatList } from "../components/DraggableFlatlist";
 import {
   requestLocationPermission,
@@ -49,27 +44,50 @@ const initialData = [
 ];
 
 const ITEM_HEIGHT = 70;
+const { width } = Dimensions.get("window");
 
 export default function RoutePlanScreen() {
   const [meetings, setMeetings] = useState(initialData);
-  const [loading, setLoading] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const granted = await requestLocationPermission();
+      if (!granted) return;
+      const location = await getCurrentLocation();
+      setCurrentLocation(location);
+    })();
+  }, []);
 
   const handleStartNavigation = async () => {
-    try {
-      setLoading(true);
-      const granted = await requestLocationPermission();
-      if (!granted) {
-        alert("Location permission denied.");
-        return;
-      }
-      const userLocation = await getCurrentLocation();
-      openGoogleMapsWithMarkers(userLocation, meetings);
-    } catch (err) {
-      console.error(err);
-      alert("Unable to open map. Try again.");
-    } finally {
-      setLoading(false);
-    }
+    if (!currentLocation) return;
+    openGoogleMapsWithMarkers(currentLocation, meetings);
+  };
+
+  // Calculate center and delta to fit all markers
+  const allPoints = currentLocation
+    ? [
+        ...meetings,
+        {
+          id: 0,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+        },
+      ]
+    : meetings;
+
+  const latitudes = allPoints.map((p) => p.latitude);
+  const longitudes = allPoints.map((p) => p.longitude);
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLon = Math.min(...longitudes);
+  const maxLon = Math.max(...longitudes);
+
+  const mapRegion = {
+    latitude: (minLat + maxLat) / 2,
+    longitude: (minLon + maxLon) / 2,
+    latitudeDelta: (maxLat - minLat) * 1.5 || 0.05,
+    longitudeDelta: (maxLon - minLon) * 1.5 || 0.05,
   };
 
   return (
@@ -77,6 +95,40 @@ export default function RoutePlanScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>Optimized Route Plan</Text>
 
+        {/* Map Preview */}
+        <View style={styles.mapWrapper}>
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              region={mapRegion}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+            >
+              {currentLocation && (
+                <Marker
+                  coordinate={currentLocation}
+                  title="You are here"
+                  pinColor="blue"
+                />
+              )}
+              {meetings.map((meeting) => (
+                <Marker
+                  key={meeting.id}
+                  coordinate={{
+                    latitude: meeting.latitude,
+                    longitude: meeting.longitude,
+                  }}
+                  title={meeting.name}
+                  description={`${meeting.type} • ${meeting.time}`}
+                />
+              ))}
+            </MapView>
+          </View>
+        </View>
+
+        {/* Draggable list */}
         <DraggableFlatList
           data={meetings}
           itemHeight={ITEM_HEIGHT}
@@ -95,11 +147,8 @@ export default function RoutePlanScreen() {
         />
 
         <View style={styles.buttonWrapper}>
-          <Text
-            style={[styles.startButton, loading && styles.disabledButton]}
-            onPress={handleStartNavigation}
-          >
-            {loading ? "Loading..." : "Optimized Route Path"}
+          <Text style={styles.startButton} onPress={handleStartNavigation}>
+            Optimized Route Path
           </Text>
         </View>
       </View>
@@ -111,9 +160,8 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#f3f4f6",
-    justifyContent: "center",
-    alignItems: "center",
     padding: 16,
+    alignItems: "center",
   },
   card: {
     backgroundColor: "#fff",
@@ -122,6 +170,16 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
+  mapWrapper: {
+    width: "100%",
+    height: 200,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 16,
+    backgroundColor: "#f0f0f0",
+  },
+  mapContainer: { flex: 1 },
+  map: { ...StyleSheet.absoluteFillObject },
   meetingItem: {
     height: ITEM_HEIGHT,
     paddingVertical: 12,
@@ -146,5 +204,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  disabledButton: { opacity: 0.6 },
 });
