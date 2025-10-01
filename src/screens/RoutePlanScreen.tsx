@@ -10,8 +10,8 @@ import {
 import { fetchTodayLeads } from "../services/Api";
 
 const ITEM_HEIGHT = 70;
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
-// Generate distinct colors for markers
 function generateColors(count: number) {
   return Array.from({ length: count }, (_, i) => {
     const hue = (i * 360) / count;
@@ -23,7 +23,6 @@ export default function RoutePlanScreen() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
 
-  // Fetch current location
   useEffect(() => {
     (async () => {
       const granted = await requestLocationPermission();
@@ -33,7 +32,6 @@ export default function RoutePlanScreen() {
     })();
   }, []);
 
-  // Fetch leads dynamically from API and filter only valid locations
   useEffect(() => {
     async function fetchLeads() {
       const leadsResult = await fetchTodayLeads();
@@ -64,7 +62,7 @@ export default function RoutePlanScreen() {
     fetchLeads();
   }, []);
 
-  // Calculate dynamic map region
+  // Calculate map region dynamically
   let mapRegion = null;
   const validPoints = [
     ...(currentLocation
@@ -102,15 +100,18 @@ export default function RoutePlanScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>Optimized Route Plan</Text>
 
-        <View style={styles.mapWrapper}>
+        <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
           {mapRegion && (
             <MapView
               style={styles.map}
               region={mapRegion}
-              scrollEnabled={false}
-              zoomEnabled={false}
-              rotateEnabled={false}
-              pitchEnabled={false}
+              scrollEnabled={true}
+              zoomEnabled={true}
+              rotateEnabled={true}
+              pitchEnabled={true}
+              zoomTapEnabled={true}
+              minZoomLevel={3}
+              maxZoomLevel={20}
             >
               {currentLocation && (
                 <Marker
@@ -146,7 +147,7 @@ export default function RoutePlanScreen() {
                   styles.meetingItem,
                   {
                     borderLeftColor: item.color || "#ccc",
-                    opacity: 1, // all items have valid coordinates
+                    opacity: 1,
                   },
                   isDragging && styles.draggingItem,
                 ]}
@@ -187,7 +188,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
   mapWrapper: {
     width: "100%",
-    height: 200,
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: 16,
