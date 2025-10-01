@@ -70,6 +70,10 @@ export default function RoutePlanScreen() {
     fetchLeads();
   }, []);
 
+  // Mock values for total distance/time (replace with your actual calculation)
+  const totalDistance = "1103.1 km";
+  const estimatedTime = "57 hr 29 min";
+
   // Calculate map region dynamically
   let mapRegion = null;
   const validPoints = [
@@ -111,11 +115,12 @@ export default function RoutePlanScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          <View style={{ flexDirection: "row" }}>
+          {/* Header */}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Feather
               name="navigation"
-              size={30}
-              color="black"
+              size={28}
+              color="#111827"
               style={{ marginRight: 8 }}
             />
             <Text style={styles.title}>Optimized Route Plan</Text>
@@ -124,6 +129,19 @@ export default function RoutePlanScreen() {
             The most efficient route to visit your scheduled meetings.
           </Text>
 
+          {/* Distance / Time Section */}
+          <View style={styles.statsWrapper}>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Total Distance</Text>
+              <Text style={styles.statValue}>{totalDistance}</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Estimated Time</Text>
+              <Text style={styles.statValue}>{estimatedTime}</Text>
+            </View>
+          </View>
+
+          {/* Map */}
           <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
             {mapRegion && (
               <MapView
@@ -160,6 +178,7 @@ export default function RoutePlanScreen() {
             )}
           </View>
 
+          {/* Draggable List */}
           {meetings.length > 0 && (
             <DraggableFlatList
               data={meetings}
@@ -186,6 +205,13 @@ export default function RoutePlanScreen() {
             />
           )}
 
+          {/* Note */}
+          <Text style={[styles.subTitle, { marginVertical: 10 }]}>
+            Note: This is an approximate route based on straight-line distances.
+            Actual travel times may vary based on traffic and road conditions.
+          </Text>
+
+          {/* Button */}
           <View style={styles.buttonWrapper}>
             <Text style={styles.startButton} onPress={handleStartNavigation}>
               Optimized Route Path
@@ -201,26 +227,48 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#f3f4f6",
-    // padding: 16,
     alignItems: "center",
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
-    width: "100%",
+    width: "95%",
     padding: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
   },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 5 },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#111827",
+  },
   subTitle: {
-    fontSize: 18,
-    marginBottom: 15,
+    fontSize: 14,
+    marginBottom: 10,
     color: "#6b7280",
   },
+  statsWrapper: {
+    // backgroundColor: "blue",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+  },
+  statBox: {
+    alignItems: "flex-start",
+  },
+  statLabel: { fontSize: 14, color: "#6b7280", marginBottom: 5 },
+  statValue: { fontSize: 20, fontWeight: "bold", color: "#111827" },
   mapWrapper: {
     width: "100%",
     borderRadius: 16,
     overflow: "hidden",
-    marginBottom: 16,
+    marginBottom: 10,
   },
   map: { ...StyleSheet.absoluteFillObject },
   meetingItem: {
@@ -238,7 +286,7 @@ const styles = StyleSheet.create({
   draggingItem: { backgroundColor: "#dbeafe" },
   meetingName: { fontSize: 16, fontWeight: "500" },
   meetingDetails: { fontSize: 12, color: "#6b7280", marginTop: 2 },
-  buttonWrapper: { marginTop: 20 },
+  buttonWrapper: { marginTop: 10 },
   startButton: {
     backgroundColor: "#2563EB",
     color: "#fff",
