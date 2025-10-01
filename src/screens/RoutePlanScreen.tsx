@@ -9,44 +9,9 @@ import {
 } from "../services/location/LocationHelper";
 import { fetchTodayLeads } from "../services/Api";
 
-const initialData = [
-  {
-    id: 1,
-    name: "Neha Verma",
-    type: "Followup",
-    time: "2:45 PM",
-    latitude: 28.6139,
-    longitude: 77.209,
-  },
-  {
-    id: 2,
-    name: "Premier Industries Corp",
-    type: "Followup",
-    time: "9:00 AM",
-    latitude: 28.4595,
-    longitude: 77.0266,
-  },
-  {
-    id: 3,
-    name: "Sanjay Sharma",
-    type: "Meeting",
-    time: "4:45 PM",
-    latitude: 28.4089,
-    longitude: 77.3178,
-  },
-  {
-    id: 4,
-    name: "Premier Industries Pvt Ltd",
-    type: "Call",
-    time: "9:30 AM",
-    latitude: 28.9845,
-    longitude: 77.7064,
-  },
-];
-
 const ITEM_HEIGHT = 70;
-const { width } = Dimensions.get("window");
 
+// Generate distinct colors for markers
 function generateColors(count: number) {
   return Array.from({ length: count }, (_, i) => {
     const hue = (i * 360) / count;
@@ -55,16 +20,10 @@ function generateColors(count: number) {
 }
 
 export default function RoutePlanScreen() {
-  const [meetings, setMeetings] = useState(() => {
-    const colors = generateColors(initialData.length);
-    return initialData.map((item, index) => ({
-      ...item,
-      color: colors[index],
-    }));
-  });
-
+  const [meetings, setMeetings] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
 
+  // Fetch current location
   useEffect(() => {
     (async () => {
       const granted = await requestLocationPermission();
@@ -74,50 +33,68 @@ export default function RoutePlanScreen() {
     })();
   }, []);
 
+  // Fetch leads dynamically from API and filter only valid locations
   useEffect(() => {
-    async function apicall() {
+    async function fetchLeads() {
       const leadsResult = await fetchTodayLeads();
-      console.log("leads Result", leadsResult);
+      if (!leadsResult || leadsResult.length === 0) return;
+
+      const filteredLeads = leadsResult.filter(
+        (lead: any) => lead.Location__c?.latitude && lead.Location__c?.longitude
+      );
+
+      const colors = generateColors(filteredLeads.length);
+
+      const mappedLeads = filteredLeads.map((lead: any, index: number) => ({
+        id: lead.Id,
+        name: lead.Name || "No Name",
+        type: lead.Status || "New",
+        time: new Date(lead.CreatedDate).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        latitude: lead.Location__c.latitude,
+        longitude: lead.Location__c.longitude,
+        color: colors[index] || "#ccc",
+      }));
+
+      setMeetings(mappedLeads);
     }
-    apicall();
+
+    fetchLeads();
   }, []);
 
-  useEffect(() => {
-    const colors = generateColors(meetings.length);
-    setMeetings((prev) => prev.map((m, i) => ({ ...m, color: colors[i] })));
-  }, [meetings.length]);
+  // Calculate dynamic map region
+  let mapRegion = null;
+  const validPoints = [
+    ...(currentLocation
+      ? [
+          {
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+          },
+        ]
+      : []),
+    ...meetings,
+  ];
+
+  if (validPoints.length > 0) {
+    const latitudes = validPoints.map((p) => p.latitude);
+    const longitudes = validPoints.map((p) => p.longitude);
+
+    mapRegion = {
+      latitude: (Math.min(...latitudes) + Math.max(...latitudes)) / 2,
+      longitude: (Math.min(...longitudes) + Math.max(...longitudes)) / 2,
+      latitudeDelta:
+        (Math.max(...latitudes) - Math.min(...latitudes)) * 1.5 || 0.05,
+      longitudeDelta:
+        (Math.max(...longitudes) - Math.min(...longitudes)) * 1.5 || 0.05,
+    };
+  }
 
   const handleStartNavigation = async () => {
-    if (!currentLocation) return;
-
-    // Use the draggable order directly
+    if (!currentLocation || meetings.length === 0) return;
     openGoogleMapsWithMarkers(currentLocation, meetings);
-  };
-
-  // Map region calculation
-  const allPoints = currentLocation
-    ? [
-        ...meetings,
-        {
-          id: 0,
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-        },
-      ]
-    : meetings;
-
-  const latitudes = allPoints.map((p) => p.latitude);
-  const longitudes = allPoints.map((p) => p.longitude);
-  const minLat = Math.min(...latitudes);
-  const maxLat = Math.max(...latitudes);
-  const minLon = Math.min(...longitudes);
-  const maxLon = Math.max(...longitudes);
-
-  const mapRegion = {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLon + maxLon) / 2,
-    latitudeDelta: (maxLat - minLat) * 1.5 || 0.05,
-    longitudeDelta: (maxLon - minLon) * 1.5 || 0.05,
   };
 
   return (
@@ -126,57 +103,63 @@ export default function RoutePlanScreen() {
         <Text style={styles.title}>Optimized Route Plan</Text>
 
         <View style={styles.mapWrapper}>
-          <MapView
-            style={styles.map}
-            region={mapRegion}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-            pitchEnabled={false}
-          >
-            {currentLocation && (
-              <Marker
-                coordinate={currentLocation}
-                title="You are here"
-                pinColor="blue"
-              />
-            )}
-
-            {meetings.map((meeting) => (
-              <Marker
-                key={meeting.id}
-                coordinate={{
-                  latitude: meeting.latitude,
-                  longitude: meeting.longitude,
-                }}
-                title={meeting.name}
-                description={`${meeting.type} • ${meeting.time}`}
-                pinColor={meeting.color}
-              />
-            ))}
-          </MapView>
+          {mapRegion && (
+            <MapView
+              style={styles.map}
+              region={mapRegion}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+            >
+              {currentLocation && (
+                <Marker
+                  coordinate={currentLocation}
+                  title="You are here"
+                  pinColor="blue"
+                />
+              )}
+              {meetings.map((meeting) => (
+                <Marker
+                  key={meeting.id}
+                  coordinate={{
+                    latitude: meeting.latitude,
+                    longitude: meeting.longitude,
+                  }}
+                  title={meeting.name}
+                  description={`${meeting.type} • ${meeting.time}`}
+                  pinColor={meeting.color}
+                />
+              ))}
+            </MapView>
+          )}
         </View>
 
-        <DraggableFlatList
-          data={meetings} // fully controlled
-          itemHeight={ITEM_HEIGHT}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={(item, index, isDragging) => (
-            <View
-              style={[
-                styles.meetingItem,
-                { borderLeftColor: item.color },
-                isDragging && styles.draggingItem,
-              ]}
-            >
-              <Text style={styles.meetingName}>{item.name}</Text>
-              <Text style={styles.meetingDetails}>
-                {item.type} • {item.time}
-              </Text>
-            </View>
-          )}
-          onDragEnd={(updated) => setMeetings(updated)} // continuously update meetings
-        />
+        {meetings.length > 0 && (
+          <DraggableFlatList
+            data={meetings}
+            itemHeight={ITEM_HEIGHT}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={(item, index, isDragging) => (
+              <View
+                style={[
+                  styles.meetingItem,
+                  {
+                    borderLeftColor: item.color || "#ccc",
+                    opacity: 1, // all items have valid coordinates
+                  },
+                  isDragging && styles.draggingItem,
+                ]}
+              >
+                <Text style={styles.meetingName}>{item.name}</Text>
+                <Text style={styles.meetingDetails}>
+                  {item.type} • {item.time}
+                </Text>
+              </View>
+            )}
+            onDragEnd={(updated) => setMeetings(updated || [])}
+          />
+        )}
 
         <View style={styles.buttonWrapper}>
           <Text style={styles.startButton} onPress={handleStartNavigation}>

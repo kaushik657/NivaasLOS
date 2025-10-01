@@ -1,5 +1,11 @@
-import React, { useRef } from "react";
-import { FlatList, View, PanResponder, StyleSheet } from "react-native";
+import React, { useRef, useState } from "react";
+import {
+  FlatList,
+  View,
+  PanResponder,
+  StyleSheet,
+  LayoutRectangle,
+} from "react-native";
 
 interface DraggableFlatListProps<T> {
   data: T[];
@@ -21,6 +27,8 @@ export const DraggableFlatList = <T,>({
   onDragEnd,
 }: DraggableFlatListProps<T>) => {
   const draggingIndex = useRef<number | null>(null);
+  const listTop = useRef<number>(0); // absolute y-position of FlatList
+  const [activeIndex, setActiveIndex] = useState<number | null>(null); // NEW
 
   const createPanResponder = (index: number) =>
     PanResponder.create({
@@ -28,42 +36,48 @@ export const DraggableFlatList = <T,>({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         draggingIndex.current = index;
+        setActiveIndex(index); // highlight immediately
       },
       onPanResponderMove: (_, gestureState) => {
         if (draggingIndex.current === null) return;
 
-        const fromIndex = draggingIndex.current;
+        const absoluteY = gestureState.moveY - listTop.current;
         const toIndex = Math.min(
           data.length - 1,
-          Math.max(
-            0,
-            Math.floor((fromIndex * itemHeight + gestureState.dy) / itemHeight)
-          )
+          Math.max(0, Math.floor(absoluteY / itemHeight))
         );
 
+        const fromIndex = draggingIndex.current;
         if (fromIndex !== toIndex) {
           const updated = [...data];
           const [moved] = updated.splice(fromIndex, 1);
           updated.splice(toIndex, 0, moved);
           draggingIndex.current = toIndex;
-          onDragEnd && onDragEnd(updated); // continuously update parent
+          setActiveIndex(toIndex); // update highlight while dragging
+          onDragEnd && onDragEnd(updated);
         }
       },
       onPanResponderRelease: () => {
         draggingIndex.current = null;
+        setActiveIndex(null); // remove highlight
       },
       onPanResponderTerminate: () => {
         draggingIndex.current = null;
+        setActiveIndex(null); // remove highlight
       },
     });
 
   const renderDraggableItem = ({ item, index }: { item: T; index: number }) => {
-    const isDragging = draggingIndex.current === index;
+    const isDragging = activeIndex === index; // use activeIndex instead of ref
     const panResponder = createPanResponder(index);
 
     return (
       <View
-        style={isDragging ? styles.draggingItem : undefined}
+        style={[
+          { zIndex: isDragging ? 1 : 0 },
+          isDragging ? { transform: [{ scale: 1.05 }] } : {},
+          isDragging && styles.draggingItem,
+        ]}
         {...panResponder.panHandlers}
       >
         {renderItem(item, index, isDragging)}
@@ -77,6 +91,10 @@ export const DraggableFlatList = <T,>({
       keyExtractor={keyExtractor}
       renderItem={renderDraggableItem}
       scrollEnabled={false}
+      onLayout={(e) => {
+        const layout: LayoutRectangle = e.nativeEvent.layout;
+        listTop.current = layout.y;
+      }}
     />
   );
 };
