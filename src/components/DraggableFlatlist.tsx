@@ -68,15 +68,13 @@ export const DraggableFlatList = <T,>({
     });
 
   const renderDraggableItem = ({ item, index }: { item: T; index: number }) => {
-    const isDragging = activeIndex === index; // use activeIndex instead of ref
+    const isDragging = activeIndex === index;
     const panResponder = createPanResponder(index);
 
     return (
       <View
         style={[
-          { zIndex: isDragging ? 1 : 0 },
-          isDragging ? { transform: [{ scale: 1.05 }] } : {},
-          isDragging && styles.draggingItem,
+          styles.itemContainer, // just change border color
         ]}
         {...panResponder.panHandlers}
       >
@@ -100,5 +98,9 @@ export const DraggableFlatList = <T,>({
 };
 
 const styles = StyleSheet.create({
-  draggingItem: { backgroundColor: "#dbeafe" },
+  itemContainer: {
+    borderWidth: 2,
+    borderColor: "transparent", // always reserve border space
+    borderRadius: 8,
+  },
 });
