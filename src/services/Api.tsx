@@ -96,3 +96,38 @@ export const GetApplicationDetails = async (id: any) => {
     throw error;
   }
 };
+
+export const fetchTodayLeads = async () => {
+  try {
+    const soql =
+      "SELECT Id, Name, Company, Status, CreatedDate,Location__c FROM Lead WHERE CreatedDate = TODAY";
+    const url = `${
+      GlobalConfig.instanceUrl
+    }/services/data/v60.0/query?q=${encodeURIComponent(soql)}`;
+
+    const token = await getAuthToken();
+    console.log("token", token);
+    if (!token) {
+      throw new Error("No auth token found in Keychain");
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // access token from OAuth
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching leads: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Today's Leads:", data.records);
+    return data.records;
+  } catch (error) {
+    console.error("Fetch today leads error:", error);
+    return [];
+  }
+};

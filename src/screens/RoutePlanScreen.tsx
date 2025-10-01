@@ -7,6 +7,7 @@ import {
   getCurrentLocation,
   openGoogleMapsWithMarkers,
 } from "../services/location/LocationHelper";
+import { fetchTodayLeads } from "../services/Api";
 
 const initialData = [
   {
@@ -71,6 +72,14 @@ export default function RoutePlanScreen() {
       const location = await getCurrentLocation();
       setCurrentLocation(location);
     })();
+  }, []);
+
+  useEffect(() => {
+    async function apicall() {
+      const leadsResult = await fetchTodayLeads();
+      console.log("leads Result", leadsResult);
+    }
+    apicall();
   }, []);
 
   useEffect(() => {
