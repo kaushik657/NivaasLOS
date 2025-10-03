@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { DraggableFlatList } from "../components/DraggableFlatlist";
@@ -232,11 +233,22 @@ export default function RoutePlanScreen() {
               conditions.
             </Text>
 
-            {/* Button */}
             <View style={styles.buttonWrapper}>
-              <Text style={styles.startButton} onPress={handleStartNavigation}>
-                Optimized Route Path
-              </Text>
+              <TouchableOpacity
+                style={styles.navigationButton}
+                onPress={handleStartNavigation}
+                activeOpacity={0.8}
+              >
+                <Feather
+                  name="map-pin"
+                  size={20}
+                  color="#3C82F6"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.navigationButtonText}>
+                  Open in Google Maps
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -314,7 +326,22 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     marginTop: verticalScale(2),
   },
-  buttonWrapper: { marginTop: verticalScale(10) },
+  buttonWrapper: { marginTop: verticalScale(10), width: "100%" },
+  navigationButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff", // white background
+    borderWidth: 2,
+    borderColor: "#3C82F6", // blue border
+    paddingVertical: verticalScale(12),
+    borderRadius: moderateScale(10),
+  },
+  navigationButtonText: {
+    color: "#2563EB", // blue text
+    fontSize: moderateScale(16),
+    fontWeight: "600",
+  },
   startButton: {
     backgroundColor: "#2563EB",
     color: "#fff",

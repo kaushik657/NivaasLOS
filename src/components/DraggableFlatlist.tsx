@@ -6,7 +6,9 @@ import {
   StyleSheet,
   Animated,
   LayoutRectangle,
+  Text,
 } from "react-native";
+import { verticalScale, moderateScale } from "react-native-size-matters";
 
 interface DraggableFlatListProps<T> {
   data: T[];
@@ -44,7 +46,6 @@ export const DraggableFlatList = <T,>({
         setActiveIndex(index);
         onDragBegin && onDragBegin();
 
-        // calculate offset from top of item
         const offset = gestureState.y0 - listTop.current - index * itemHeight;
         setDragStartOffset(offset);
 
@@ -98,9 +99,12 @@ export const DraggableFlatList = <T,>({
 
   return (
     <View
-      style={{ width: "100%" }}
+      style={styles.container}
       onLayout={(e) => (listTop.current = e.nativeEvent.layout.y)}
     >
+      {/* Title on top */}
+      <Text style={styles.title}>Optimized Meeting Order</Text>
+
       <FlatList
         data={data}
         keyExtractor={keyExtractor}
@@ -124,6 +128,26 @@ export const DraggableFlatList = <T,>({
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: moderateScale(12),
+    padding: moderateScale(10),
+    marginVertical: verticalScale(8),
+    borderWidth: 1,
+    borderColor: "#d1d5db", // light gray border
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  title: {
+    fontSize: moderateScale(18),
+    fontWeight: "bold",
+    marginBottom: verticalScale(8),
+    color: "#111827",
+  },
   itemContainer: {
     borderWidth: 2,
     borderColor: "transparent",
