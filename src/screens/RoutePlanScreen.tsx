@@ -30,6 +30,7 @@ function generateColors(count: number) {
 export default function RoutePlanScreen() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
+  const [dragging, setDragging] = useState(false); // track drag
 
   useEffect(() => {
     (async () => {
@@ -70,7 +71,7 @@ export default function RoutePlanScreen() {
     fetchLeads();
   }, []);
 
-  // Mock values for total distance/time (replace with your actual calculation)
+  // Mock values for total distance/time
   const totalDistance = "1103.1 km";
   const estimatedTime = "57 hr 29 min";
 
@@ -113,6 +114,7 @@ export default function RoutePlanScreen() {
         style={{ width: "100%" }}
         contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!dragging} // disable scrolling while dragging
       >
         <View style={styles.card}>
           {/* Header */}
@@ -188,10 +190,7 @@ export default function RoutePlanScreen() {
                 <View
                   style={[
                     styles.meetingItem,
-                    {
-                      borderLeftColor: item.color || "#ccc",
-                      opacity: 1,
-                    },
+                    { borderLeftColor: item.color || "#ccc" },
                     isDragging && styles.draggingItem,
                   ]}
                 >
@@ -201,7 +200,11 @@ export default function RoutePlanScreen() {
                   </Text>
                 </View>
               )}
-              onDragEnd={(updated) => setMeetings(updated || [])}
+              onDragBegin={() => setDragging(true)}
+              onDragEnd={(updated) => {
+                setDragging(false);
+                setMeetings(updated || []);
+              }}
             />
           )}
 
@@ -224,11 +227,7 @@ export default function RoutePlanScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#f3f4f6",
-    alignItems: "center",
-  },
+  screen: { flex: 1, backgroundColor: "#f3f4f6", alignItems: "center" },
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -246,22 +245,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: "#111827",
   },
-  subTitle: {
-    fontSize: 14,
-    marginBottom: 10,
-    color: "#6b7280",
-  },
+  subTitle: { fontSize: 14, marginBottom: 10, color: "#6b7280" },
   statsWrapper: {
-    // backgroundColor: "blue",
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 10,
     paddingVertical: 10,
     paddingHorizontal: 5,
   },
-  statBox: {
-    alignItems: "flex-start",
-  },
+  statBox: { alignItems: "flex-start" },
   statLabel: { fontSize: 14, color: "#6b7280", marginBottom: 5 },
   statValue: { fontSize: 20, fontWeight: "bold", color: "#111827" },
   mapWrapper: {
