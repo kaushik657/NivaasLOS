@@ -7,7 +7,7 @@ import {
   Dimensions,
   ScrollView,
 } from "react-native";
-import MapView, { Marker, LatLng } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { DraggableFlatList } from "../components/DraggableFlatlist";
 import { scale, verticalScale, moderateScale } from "react-native-size-matters";
 import {
@@ -18,8 +18,9 @@ import {
 import { fetchTodayLeads } from "../services/Api";
 import Feather from "react-native-vector-icons/Feather";
 import Loader from "../components/Loader"; // ✅ import loader
+import { LatLng, calculateRoute } from "../utils/routeUtils"; // ✅ import route utils
 
-const ITEM_HEIGHT = verticalScale(70); // responsive item height
+const ITEM_HEIGHT = verticalScale(70);
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 function generateColors(count: number) {
@@ -33,7 +34,9 @@ export default function RoutePlanScreen() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [loading, setLoading] = useState(false); // ✅ track loading
+  const [loading, setLoading] = useState(false);
+  const [totalDistance, setTotalDistance] = useState("--");
+  const [estimatedTimeStr, setEstimatedTimeStr] = useState("--");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,16 +75,28 @@ export default function RoutePlanScreen() {
       } catch (error) {
         console.log("Error in route plan:", error);
       } finally {
-        setLoading(false); // ✅ hide loader after fetch
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  // Mock values for total distance/time
-  const totalDistance = "1103.1 km";
-  const estimatedTime = "57 hr 29 min";
+  // Update dynamic distance and time
+  useEffect(() => {
+    if (currentLocation && meetings.length > 0) {
+      const points = meetings.map((m) => ({
+        latitude: m.latitude,
+        longitude: m.longitude,
+      }));
+      const { totalDistance, estimatedTime } = calculateRoute(
+        currentLocation,
+        points
+      );
+      setTotalDistance(totalDistance);
+      setEstimatedTimeStr(estimatedTime);
+    }
+  }, [currentLocation, meetings]);
 
   // Calculate map region dynamically
   let mapRegion = null;
@@ -118,7 +133,7 @@ export default function RoutePlanScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      {/* ✅ Loader always on top */}
+      {/* Loader */}
       <Loader visible={loading} />
 
       {!loading && (
@@ -151,7 +166,7 @@ export default function RoutePlanScreen() {
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>Estimated Time</Text>
-                <Text style={styles.statValue}>{estimatedTime}</Text>
+                <Text style={styles.statValue}>{estimatedTimeStr}</Text>
               </View>
             </View>
 

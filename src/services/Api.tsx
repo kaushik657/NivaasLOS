@@ -3,7 +3,13 @@ import GlobalConfig from "../utils/Configs";
 import { buildEVerificationPayload } from "../helpers/DeepMerge";
 import { getAuthToken } from "./Keychain";
 
+type LatLng = {
+  latitude: number;
+  longitude: number;
+};
 console.log(GlobalConfig);
+
+const API_KEY = "AIzaSyC1-MUz0bX_Bp_CXU97mm4Nmyf-Hj95rYw"; // Replace with your actual Google Maps API key
 
 const BASE_URL = GlobalConfig.instanceUrl;
 
@@ -131,3 +137,40 @@ export const fetchTodayLeads = async () => {
     return [];
   }
 };
+
+async function getDistanceAndTime(currentLocation: LatLng, meetings: any[]) {
+  if (!currentLocation || meetings.length === 0) return null;
+
+  const destinations = meetings
+    .map((m) => `${m.latitude},${m.longitude}`)
+    .join("|");
+
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${currentLocation.latitude},${currentLocation.longitude}&destinations=${destinations}&mode=driving&key=${API_KEY}`;
+
+  const response = await axios.get(url);
+  const data = response.data;
+
+  if (data.status === "OK") {
+    // sum up all legs
+    let totalDistance = 0;
+    let totalDuration = 0;
+
+    data.rows[0].elements.forEach((el: any) => {
+      if (el.status === "OK") {
+        totalDistance += el.distance.value; // in meters
+        totalDuration += el.duration.value; // in seconds
+      }
+    });
+
+    return {
+      distance: (totalDistance / 1000).toFixed(1) + " km",
+      duration:
+        Math.floor(totalDuration / 3600) +
+        " hr " +
+        Math.floor((totalDuration % 3600) / 60) +
+        " min",
+    };
+  }
+
+  return null;
+}
