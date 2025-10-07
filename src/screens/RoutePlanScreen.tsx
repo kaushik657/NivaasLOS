@@ -8,7 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polygon, Polyline } from "react-native-maps";
 import { DraggableFlatList } from "../components/DraggableFlatlist";
 import { scale, verticalScale, moderateScale } from "react-native-size-matters";
 import {
@@ -38,6 +38,15 @@ export default function RoutePlanScreen() {
   const [loading, setLoading] = useState(false);
   const [totalDistance, setTotalDistance] = useState("--");
   const [estimatedTimeStr, setEstimatedTimeStr] = useState("--");
+
+  const polylineCoords = [
+    ...(currentLocation ? [currentLocation] : []),
+    ...meetings.map((meeting) => ({
+      latitude: meeting.latitude,
+      longitude: meeting.longitude,
+    })),
+  ];
+  console.log("polyyyyyy", polylineCoords);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,7 +183,11 @@ export default function RoutePlanScreen() {
             {/* Map */}
             <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
               {mapRegion && (
-                <MapView style={styles.map} region={mapRegion}>
+                <MapView
+                  style={styles.map}
+                  region={mapRegion}
+                  provider="google"
+                >
                   {currentLocation && (
                     <Marker
                       coordinate={currentLocation}
@@ -194,6 +207,22 @@ export default function RoutePlanScreen() {
                       pinColor={meeting.color}
                     />
                   ))}
+                  {polylineCoords.length > 1 && (
+                    <Polyline
+                      coordinates={polylineCoords}
+                      strokeColor="#007AFF"
+                      strokeWidth={4}
+                      lineDashPattern={[1]}
+                    />
+                  )}
+                  {polylineCoords.length > 2 && (
+                    <Polygon
+                      coordinates={polylineCoords}
+                      fillColor="rgba(0,122,255,0.2)" // semi-transparent fill
+                      strokeColor="#007AFF" // border color
+                      strokeWidth={2}
+                    />
+                  )}
                 </MapView>
               )}
             </View>

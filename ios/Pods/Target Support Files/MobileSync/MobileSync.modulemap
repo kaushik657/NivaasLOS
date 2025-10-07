@@ -1,6 +1,0 @@
-framework module MobileSync {
-  umbrella header "MobileSync-umbrella.h"
-
-  export *
-  module * { export * }
-}
