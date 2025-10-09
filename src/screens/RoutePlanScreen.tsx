@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
 } from "react-native";
 import MapView, { Marker, Polygon, Polyline } from "react-native-maps";
@@ -20,6 +21,7 @@ import { fetchTodayLeads } from "../services/Api";
 import Feather from "react-native-vector-icons/Feather";
 import Loader from "../components/Loader"; // ✅ import loader
 import { LatLng, calculateRoute } from "../utils/routeUtils"; // ✅ import route utils
+import { Colors } from "../constants/colors";
 
 const ITEM_HEIGHT = verticalScale(70);
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -47,6 +49,16 @@ export default function RoutePlanScreen() {
     })),
   ];
   console.log("polyyyyyy", polylineCoords);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +102,7 @@ export default function RoutePlanScreen() {
     };
 
     fetchData();
-  }, []);
+  }, [refreshing]);
 
   // Update dynamic distance and time
   useEffect(() => {
@@ -146,142 +158,144 @@ export default function RoutePlanScreen() {
       {/* Loader */}
       <Loader visible={loading} />
 
-      {!loading && (
-        <ScrollView
-          style={{ width: "100%" }}
-          contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={!dragging}
-        >
-          <View style={styles.card}>
-            {/* Header */}
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Feather
-                name="navigation"
-                size={28}
-                color="#111827"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.title}>Optimized Route Plan</Text>
+      <ScrollView
+        style={{ width: "100%" }}
+        contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={!dragging}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#0a84ff"]} // Android
+            tintColor="#0a84ff" // iOS
+            title="Refreshing..." // iOS only
+          />
+        }
+      >
+        <View style={styles.card}>
+          {/* Header */}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Feather
+              name="navigation"
+              size={28}
+              color="#111827"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.title}>Optimized Route Plan</Text>
+          </View>
+          <Text style={styles.subTitle}>
+            The most efficient route to visit your scheduled meetings.
+          </Text>
+
+          {/* Distance / Time Section */}
+          <View style={styles.statsWrapper}>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Total Distance</Text>
+              <Text style={styles.statValue}>{totalDistance}</Text>
             </View>
-            <Text style={styles.subTitle}>
-              The most efficient route to visit your scheduled meetings.
-            </Text>
-
-            {/* Distance / Time Section */}
-            <View style={styles.statsWrapper}>
-              <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Total Distance</Text>
-                <Text style={styles.statValue}>{totalDistance}</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Estimated Time</Text>
-                <Text style={styles.statValue}>{estimatedTimeStr}</Text>
-              </View>
-            </View>
-
-            {/* Map */}
-            <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
-              {mapRegion && (
-                <MapView
-                  style={styles.map}
-                  region={mapRegion}
-                  provider="google"
-                >
-                  {currentLocation && (
-                    <Marker
-                      coordinate={currentLocation}
-                      title="You are here"
-                      pinColor="blue"
-                    />
-                  )}
-                  {meetings.map((meeting) => (
-                    <Marker
-                      key={meeting.id}
-                      coordinate={{
-                        latitude: meeting.latitude,
-                        longitude: meeting.longitude,
-                      }}
-                      title={meeting.name}
-                      description={`${meeting.type} • ${meeting.time}`}
-                      pinColor={meeting.color}
-                    />
-                  ))}
-                  {polylineCoords.length > 1 && (
-                    <Polyline
-                      coordinates={polylineCoords}
-                      strokeColor="#007AFF"
-                      strokeWidth={4}
-                      lineDashPattern={[1]}
-                    />
-                  )}
-                  {polylineCoords.length > 2 && (
-                    <Polygon
-                      coordinates={polylineCoords}
-                      fillColor="rgba(0,122,255,0.2)" // semi-transparent fill
-                      strokeColor="#007AFF" // border color
-                      strokeWidth={2}
-                    />
-                  )}
-                </MapView>
-              )}
-            </View>
-
-            {/* Draggable List */}
-            {meetings.length > 0 && (
-              <DraggableFlatList
-                data={meetings}
-                itemHeight={ITEM_HEIGHT}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={(item, index, isDragging) => (
-                  <View
-                    style={[
-                      styles.meetingItem,
-                      { borderLeftColor: item.color || "#ccc" },
-                      isDragging && styles.draggingItem,
-                    ]}
-                  >
-                    <Text style={styles.meetingName}>{item.name}</Text>
-                    <Text style={styles.meetingDetails}>
-                      {item.type} • {item.time}
-                    </Text>
-                  </View>
-                )}
-                onDragBegin={() => setDragging(true)}
-                onDragEnd={(updated) => {
-                  setDragging(false);
-                  setMeetings(updated || []);
-                }}
-              />
-            )}
-
-            {/* Note */}
-            <Text style={[styles.subTitle, { marginVertical: 10 }]}>
-              Note: This is an approximate route based on straight-line
-              distances. Actual travel times may vary based on traffic and road
-              conditions.
-            </Text>
-
-            <View style={styles.buttonWrapper}>
-              <TouchableOpacity
-                style={styles.navigationButton}
-                onPress={handleStartNavigation}
-                activeOpacity={0.8}
-              >
-                <Feather
-                  name="map-pin"
-                  size={20}
-                  color="#3C82F6"
-                  style={{ marginRight: 8 }}
-                />
-                <Text style={styles.navigationButtonText}>
-                  Open in Google Maps
-                </Text>
-              </TouchableOpacity>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Estimated Time</Text>
+              <Text style={styles.statValue}>{estimatedTimeStr}</Text>
             </View>
           </View>
-        </ScrollView>
-      )}
+
+          {/* Map */}
+          <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
+            {mapRegion && (
+              <MapView style={styles.map} region={mapRegion} provider="google">
+                {currentLocation && (
+                  <Marker
+                    coordinate={currentLocation}
+                    title="You are here"
+                    pinColor="blue"
+                  />
+                )}
+                {meetings.map((meeting) => (
+                  <Marker
+                    key={meeting.id}
+                    coordinate={{
+                      latitude: meeting.latitude,
+                      longitude: meeting.longitude,
+                    }}
+                    title={meeting.name}
+                    description={`${meeting.type} • ${meeting.time}`}
+                    pinColor={meeting.color}
+                  />
+                ))}
+                {polylineCoords.length > 1 && (
+                  <Polyline
+                    coordinates={polylineCoords}
+                    strokeColor="#007AFF"
+                    strokeWidth={4}
+                    lineDashPattern={[1]}
+                  />
+                )}
+                {polylineCoords.length > 2 && (
+                  <Polygon
+                    coordinates={polylineCoords}
+                    fillColor="rgba(0,122,255,0.2)" // semi-transparent fill
+                    strokeColor="#007AFF" // border color
+                    strokeWidth={2}
+                  />
+                )}
+              </MapView>
+            )}
+          </View>
+
+          {/* Draggable List */}
+          {meetings.length > 0 && (
+            <DraggableFlatList
+              data={meetings}
+              itemHeight={ITEM_HEIGHT}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={(item, index, isDragging) => (
+                <View
+                  style={[
+                    styles.meetingItem,
+                    { borderLeftColor: item.color || "#ccc" },
+                    isDragging && styles.draggingItem,
+                  ]}
+                >
+                  <Text style={styles.meetingName}>{item.name}</Text>
+                  <Text style={styles.meetingDetails}>
+                    {item.type} • {item.time}
+                  </Text>
+                </View>
+              )}
+              onDragBegin={() => setDragging(true)}
+              onDragEnd={(updated) => {
+                setDragging(false);
+                setMeetings(updated);
+              }}
+            />
+          )}
+
+          {/* Note */}
+          <Text style={[styles.subTitle, { marginVertical: 10 }]}>
+            Note: This is an approximate route based on straight-line distances.
+            Actual travel times may vary based on traffic and road conditions.
+          </Text>
+
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity
+              style={styles.navigationButton}
+              onPress={handleStartNavigation}
+              activeOpacity={0.8}
+            >
+              <Feather
+                name="map-pin"
+                size={20}
+                color="#3C82F6"
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.navigationButtonText}>
+                Open in Google Maps
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -304,7 +318,7 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(20),
     fontWeight: "bold",
     marginBottom: verticalScale(5),
-    color: "#111827",
+    color: Colors.BLACK,
   },
   subTitle: {
     fontSize: moderateScale(14),
@@ -327,7 +341,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: moderateScale(18),
     fontWeight: "bold",
-    color: "#111827",
+    color: Colors.BLACK,
   },
   mapWrapper: {
     width: "100%",

@@ -15,7 +15,7 @@ export enum Colors {
   PRIMARY = '#1A529A',           // Primary theme color (buttons, highlights)
   BACKGROUND_LIGHT = '#E2EAF4',  // Light background for cards, image boxes
   WHITE = '#FFFFFF',             // White backgrounds/text
-  BLACK = '#000000',             // Black text
+  BLACK = '#020817',             // Black text
   TEXT_GRAY = '#666666',         // Subtle gray text
   LIGHT_GRAY = '#F7F7F7',        // Light gray for backgrounds
   BORDER_GRAY = '#E0E0E0',       // Border color for cards
