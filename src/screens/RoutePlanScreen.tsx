@@ -22,6 +22,7 @@ import Feather from "react-native-vector-icons/Feather";
 import Loader from "../components/Loader"; // ✅ import loader
 import { LatLng, calculateRoute } from "../utils/routeUtils"; // ✅ import route utils
 import { Colors } from "../constants/colors";
+import NewLoader from "../components/NewLoader";
 
 const ITEM_HEIGHT = verticalScale(70);
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -156,8 +157,12 @@ export default function RoutePlanScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       {/* Loader */}
-      <Loader visible={loading} />
-
+      {/* <Loader visible={loading} /> */}
+      <NewLoader
+        visible={loading}
+        type="LineScalePulseOutRapid"
+        color="#6f421b"
+      />
       <ScrollView
         style={{ width: "100%" }}
         contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
