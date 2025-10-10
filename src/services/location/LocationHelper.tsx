@@ -212,3 +212,12 @@ export const openGoogleMapsWithMarkers = async (
     Alert.alert("Error", "Something went wrong while opening Google Maps.");
   }
 };
+
+export const openGoogleMaps = (lat: any, lng: any) => {
+  const url: any = Platform.select({
+    ios: `maps://app?daddr=${lat},${lng}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(My+Location)`,
+  });
+
+  Linking.openURL(url);
+};

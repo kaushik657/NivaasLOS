@@ -5,7 +5,9 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { verticalScale, moderateScale } from "react-native-size-matters";
+import { openGoogleMaps } from "../services/location/LocationHelper";
 
 interface Props {
   data: any[];
@@ -18,6 +20,11 @@ interface Props {
 const NewFlatlist = forwardRef<any, Props>(
   ({ data, setData, onDragStart, onDragEnd, simultaneousHandlers }, ref) => {
     if (!data || !Array.isArray(data)) return null;
+
+    console.log("Rendering NexFlatlist with data:", data);
+    const handleStartNavigation = (item: any) => {
+      openGoogleMaps(item.latitude, item.longitude);
+    };
 
     const renderItem = ({ item, drag, isActive }: any) => (
       <ScaleDecorator>
@@ -47,6 +54,12 @@ const NewFlatlist = forwardRef<any, Props>(
                 {item.type} • {item.time}
               </Text>
             </View>
+            <FontAwesome5
+              name="directions"
+              size={20}
+              color="#6b7280"
+              onPress={() => handleStartNavigation(item)}
+            />
           </View>
         </View>
       </ScaleDecorator>
