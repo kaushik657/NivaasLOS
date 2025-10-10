@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   View,
@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import MapView, { Marker, Polygon, Polyline } from "react-native-maps";
-import { DraggableFlatList } from "../components/DraggableFlatlist";
+import Feather from "react-native-vector-icons/Feather";
 import { scale, verticalScale, moderateScale } from "react-native-size-matters";
 import {
   requestLocationPermission,
@@ -18,13 +18,11 @@ import {
   openGoogleMapsWithMarkers,
 } from "../services/location/LocationHelper";
 import { fetchTodayLeads } from "../services/Api";
-import Feather from "react-native-vector-icons/Feather";
-import Loader from "../components/Loader"; // ✅ import loader
-import { LatLng, calculateRoute } from "../utils/routeUtils"; // ✅ import route utils
+import { LatLng, calculateRoute } from "../utils/routeUtils";
 import { Colors } from "../constants/colors";
 import NewLoader from "../components/NewLoader";
+import NewFlatlist from "../components/NexFlatlist";
 
-const ITEM_HEIGHT = verticalScale(70);
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 function generateColors(count: number) {
@@ -41,6 +39,9 @@ export default function RoutePlanScreen() {
   const [loading, setLoading] = useState(false);
   const [totalDistance, setTotalDistance] = useState("--");
   const [estimatedTimeStr, setEstimatedTimeStr] = useState("--");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const scrollRef = useRef<ScrollView>(null);
 
   const polylineCoords = [
     ...(currentLocation ? [currentLocation] : []),
@@ -49,16 +50,10 @@ export default function RoutePlanScreen() {
       longitude: meeting.longitude,
     })),
   ];
-  console.log("polyyyyyy", polylineCoords);
-
-  const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = () => {
     setRefreshing(true);
-
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+    setTimeout(() => setRefreshing(false), 1500);
   };
 
   useEffect(() => {
@@ -105,7 +100,7 @@ export default function RoutePlanScreen() {
     fetchData();
   }, [refreshing]);
 
-  // Update dynamic distance and time
+  // Update distance & estimated time dynamically
   useEffect(() => {
     if (currentLocation && meetings.length > 0) {
       const points = meetings.map((m) => ({
@@ -121,7 +116,7 @@ export default function RoutePlanScreen() {
     }
   }, [currentLocation, meetings]);
 
-  // Calculate map region dynamically
+  // Map region calculation
   let mapRegion = null;
   const validPoints = [
     ...(currentLocation
@@ -149,37 +144,37 @@ export default function RoutePlanScreen() {
     };
   }
 
-  const handleStartNavigation = async () => {
+  const handleStartNavigation = () => {
     if (!currentLocation || meetings.length === 0) return;
     openGoogleMapsWithMarkers(currentLocation, meetings);
   };
 
   return (
     <SafeAreaView style={styles.screen}>
-      {/* Loader */}
-      {/* <Loader visible={loading} /> */}
       <NewLoader
         visible={loading}
         type="LineScalePulseOutRapid"
         color="#6f421b"
       />
+
       <ScrollView
+        ref={scrollRef}
         style={{ width: "100%" }}
         contentContainerStyle={{ alignItems: "center", paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!dragging}
+        nestedScrollEnabled
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#0a84ff"]} // Android
-            tintColor="#0a84ff" // iOS
-            title="Refreshing..." // iOS only
+            colors={["#0a84ff"]}
+            tintColor="#0a84ff"
+            title="Refreshing..."
           />
         }
       >
         <View style={styles.card}>
-          {/* Header */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Feather
               name="navigation"
@@ -189,11 +184,11 @@ export default function RoutePlanScreen() {
             />
             <Text style={styles.title}>Optimized Route Plan</Text>
           </View>
+
           <Text style={styles.subTitle}>
             The most efficient route to visit your scheduled meetings.
           </Text>
 
-          {/* Distance / Time Section */}
           <View style={styles.statsWrapper}>
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>Total Distance</Text>
@@ -205,7 +200,6 @@ export default function RoutePlanScreen() {
             </View>
           </View>
 
-          {/* Map */}
           <View style={[styles.mapWrapper, { height: SCREEN_HEIGHT * 0.4 }]}>
             {mapRegion && (
               <MapView style={styles.map} region={mapRegion} provider="google">
@@ -239,8 +233,8 @@ export default function RoutePlanScreen() {
                 {polylineCoords.length > 2 && (
                   <Polygon
                     coordinates={polylineCoords}
-                    fillColor="rgba(0,122,255,0.2)" // semi-transparent fill
-                    strokeColor="#007AFF" // border color
+                    fillColor="rgba(0,122,255,0.2)"
+                    strokeColor="#007AFF"
                     strokeWidth={2}
                   />
                 )}
@@ -248,35 +242,16 @@ export default function RoutePlanScreen() {
             )}
           </View>
 
-          {/* Draggable List */}
           {meetings.length > 0 && (
-            <DraggableFlatList
+            <NewFlatlist
               data={meetings}
-              itemHeight={ITEM_HEIGHT}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={(item, index, isDragging) => (
-                <View
-                  style={[
-                    styles.meetingItem,
-                    { borderLeftColor: item.color || "#ccc" },
-                    isDragging && styles.draggingItem,
-                  ]}
-                >
-                  <Text style={styles.meetingName}>{item.name}</Text>
-                  <Text style={styles.meetingDetails}>
-                    {item.type} • {item.time}
-                  </Text>
-                </View>
-              )}
-              onDragBegin={() => setDragging(true)}
-              onDragEnd={(updated) => {
-                setDragging(false);
-                setMeetings(updated);
-              }}
+              setData={setMeetings}
+              onDragStart={() => setDragging(true)}
+              onDragEnd={() => setDragging(false)}
+              simultaneousHandlers={scrollRef} // crucial fix
             />
           )}
 
-          {/* Note */}
           <Text style={[styles.subTitle, { marginVertical: 10 }]}>
             Note: This is an approximate route based on straight-line distances.
             Actual travel times may vary based on traffic and road conditions.
@@ -355,47 +330,19 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10),
   },
   map: { ...StyleSheet.absoluteFillObject },
-  meetingItem: {
-    height: ITEM_HEIGHT,
-    paddingVertical: verticalScale(12),
-    paddingHorizontal: scale(10),
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    justifyContent: "center",
-    backgroundColor: "#f9fafb",
-    borderRadius: moderateScale(8),
-    marginVertical: verticalScale(4),
-    borderLeftWidth: scale(6),
-  },
-  draggingItem: { backgroundColor: "#dbeafe" },
-  meetingName: { fontSize: moderateScale(16), fontWeight: "500" },
-  meetingDetails: {
-    fontSize: moderateScale(12),
-    color: "#6b7280",
-    marginTop: verticalScale(2),
-  },
   buttonWrapper: { marginTop: verticalScale(10), width: "100%" },
   navigationButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff", // white background
+    backgroundColor: "#fff",
     borderWidth: 2,
-    borderColor: "#3C82F6", // blue border
+    borderColor: "#3C82F6",
     paddingVertical: verticalScale(12),
     borderRadius: moderateScale(10),
   },
   navigationButtonText: {
-    color: "#2563EB", // blue text
-    fontSize: moderateScale(16),
-    fontWeight: "600",
-  },
-  startButton: {
-    backgroundColor: "#2563EB",
-    color: "#fff",
-    textAlign: "center",
-    paddingVertical: verticalScale(12),
-    borderRadius: moderateScale(10),
+    color: "#2563EB",
     fontSize: moderateScale(16),
     fontWeight: "600",
   },
