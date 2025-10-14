@@ -19,6 +19,7 @@ export enum ScreenNames {
   FACE_MATCH_RESULT = "FaceMatchResult",
   ROUTE_PLAN = "RoutePlanScreen",
 }
+//screen names
 
 export default function AppNavigator() {
   return (
