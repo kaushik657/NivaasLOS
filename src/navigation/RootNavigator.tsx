@@ -9,9 +9,7 @@ const linking = {
   prefixes: ["niwaslos://"],
   config: {
     screens: {
-      Dashboard: "dashboard",
-      DocUpload: "docupload",
-      FaceLiveness: "faceliveness",
+      Routeplan: "Routeplan",
     },
   },
 };

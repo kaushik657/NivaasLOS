@@ -8,6 +8,8 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { verticalScale, moderateScale } from "react-native-size-matters";
 import { openGoogleMaps } from "../services/location/LocationHelper";
+import ThreeDotMenu from "./ThreeDotMenu";
+import { MenuProvider } from "react-native-popup-menu";
 
 interface Props {
   data: any[];
@@ -22,9 +24,6 @@ const NewFlatlist = forwardRef<any, Props>(
     if (!data || !Array.isArray(data)) return null;
 
     console.log("Rendering NexFlatlist with data:", data);
-    const handleStartNavigation = (item: any) => {
-      openGoogleMaps(item.latitude, item.longitude);
-    };
 
     const renderItem = ({ item, drag, isActive }: any) => (
       <ScaleDecorator>
@@ -48,18 +47,21 @@ const NewFlatlist = forwardRef<any, Props>(
             </TouchableOpacity>
 
             {/* Item content */}
-            <View style={{ flex: 1, paddingLeft: 10 }}>
+            <View style={{ flex: 1.5, paddingLeft: 10 }}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.details}>
                 {item.type} • {item.time}
               </Text>
             </View>
-            <FontAwesome5
+            {/* <FontAwesome5
               name="directions"
               size={20}
               color="#6b7280"
               onPress={() => handleStartNavigation(item)}
-            />
+            /> */}
+            <View style={{ position: "absolute", right: 10, top: 10 }}>
+              <ThreeDotMenu item={item} />
+            </View>
           </View>
         </View>
       </ScaleDecorator>
@@ -70,20 +72,22 @@ const NewFlatlist = forwardRef<any, Props>(
         {/* Title on top */}
         <Text style={styles.title}>Optimized Meeting Order</Text>
         <GestureHandlerRootView>
-          <DraggableFlatList
-            ref={ref}
-            data={data}
-            scrollEnabled={false} // parent scroll
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            activationDistance={20} // drag only after movement
-            onDragBegin={() => onDragStart && onDragStart()}
-            onDragEnd={({ data }) => {
-              setData(data);
-              onDragEnd && onDragEnd();
-            }}
-            simultaneousHandlers={simultaneousHandlers} // fixes extreme edges issue
-          />
+          <MenuProvider>
+            <DraggableFlatList
+              ref={ref}
+              data={data}
+              scrollEnabled={false} // parent scroll
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+              activationDistance={20} // drag only after movement
+              onDragBegin={() => onDragStart && onDragStart()}
+              onDragEnd={({ data }) => {
+                setData(data);
+                onDragEnd && onDragEnd();
+              }}
+              simultaneousHandlers={simultaneousHandlers} // fixes extreme edges issue
+            />
+          </MenuProvider>
         </GestureHandlerRootView>
       </View>
     );
