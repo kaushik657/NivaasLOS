@@ -5,15 +5,23 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { verticalScale, moderateScale } from "react-native-size-matters";
-import { openGoogleMaps } from "../services/location/LocationHelper";
 import ThreeDotMenu from "./ThreeDotMenu";
-import { MenuProvider } from "react-native-popup-menu";
+
+interface Item {
+  id: string;
+  name: string;
+  type: string;
+  time: string;
+  color?: string;
+  latitude: number;
+  longitude: number;
+  [key: string]: any;
+}
 
 interface Props {
-  data: any[];
-  setData: (data: any[]) => void;
+  data: Item[];
+  setData: (data: Item[]) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
   simultaneousHandlers?: any;
@@ -23,9 +31,15 @@ const NewFlatlist = forwardRef<any, Props>(
   ({ data, setData, onDragStart, onDragEnd, simultaneousHandlers }, ref) => {
     if (!data || !Array.isArray(data)) return null;
 
-    console.log("Rendering NexFlatlist with data:", data);
-
-    const renderItem = ({ item, drag, isActive }: any) => (
+    const renderItem = ({
+      item,
+      drag,
+      isActive,
+    }: {
+      item: Item;
+      drag: () => void;
+      isActive: boolean;
+    }) => (
       <ScaleDecorator>
         <View
           style={[
@@ -53,13 +67,14 @@ const NewFlatlist = forwardRef<any, Props>(
                 {item.type} • {item.time}
               </Text>
             </View>
-            {/* <FontAwesome5
-              name="directions"
-              size={20}
-              color="#6b7280"
-              onPress={() => handleStartNavigation(item)}
-            /> */}
-            <View style={{ position: "absolute", right: 10, top: 10 }}>
+
+            <View
+              style={{
+                flex: 0.3,
+                alignItems: "flex-end",
+                justifyContent: "center",
+              }}
+            >
               <ThreeDotMenu item={item} />
             </View>
           </View>
@@ -69,25 +84,22 @@ const NewFlatlist = forwardRef<any, Props>(
 
     return (
       <View style={styles.container}>
-        {/* Title on top */}
         <Text style={styles.title}>Optimized Meeting Order</Text>
         <GestureHandlerRootView>
-          <MenuProvider>
-            <DraggableFlatList
-              ref={ref}
-              data={data}
-              scrollEnabled={false} // parent scroll
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderItem}
-              activationDistance={20} // drag only after movement
-              onDragBegin={() => onDragStart && onDragStart()}
-              onDragEnd={({ data }) => {
-                setData(data);
-                onDragEnd && onDragEnd();
-              }}
-              simultaneousHandlers={simultaneousHandlers} // fixes extreme edges issue
-            />
-          </MenuProvider>
+          <DraggableFlatList
+            ref={ref}
+            data={data}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            activationDistance={20}
+            onDragBegin={() => onDragStart && onDragStart()}
+            onDragEnd={({ data }) => {
+              setData(data);
+              onDragEnd && onDragEnd();
+            }}
+            simultaneousHandlers={simultaneousHandlers}
+          />
         </GestureHandlerRootView>
       </View>
     );
@@ -104,7 +116,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(10),
     marginVertical: verticalScale(8),
     borderWidth: 1,
-    borderColor: "#d1d5db", // light gray border
+    borderColor: "#d1d5db",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },

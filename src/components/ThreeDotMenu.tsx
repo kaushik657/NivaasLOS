@@ -1,73 +1,115 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from "react-native-popup-menu";
-import Icon from "react-native-vector-icons/Feather"; // You can use MaterialIcons or Entypo too
-import { openGoogleMaps } from "../services/location/LocationHelper";
+import React, { useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import * as MaterialMenu from "react-native-material-menu";
+import Icon from "react-native-vector-icons/Feather";
+import Fontisto from "react-native-vector-icons/Fontisto";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { openGoogleMaps } from "../services/location/LocationHelper";
 import { openSalesforceOne } from "../helpers/helpers";
 
-const ThreeDotMenu = (item: any) => {
-  const handleStartNavigation = (item: any) => {
-    console.log("Navigating to:", item);
-
-    openGoogleMaps(item.item.latitude, item.item.longitude);
+interface ThreeDotMenuProps {
+  item: {
+    Id: string;
+    latitude: number;
+    longitude: number;
+    [key: string]: any;
   };
-  return (
-    <View style={styles.container}>
-      <Menu rendererProps={{ placement: "auto" }}>
-        {/* 👇 Three-dot trigger icon */}
-        <MenuTrigger>
-          <Icon name="more-vertical" size={24} color="#000" />
-        </MenuTrigger>
+}
 
-        {/* 👇 Menu Options */}
-        <MenuOptions
-          customStyles={{
-            optionsContainer: {
-              position: "absolute",
-              padding: 8,
-              paddingBottom: 20,
-              // marginBottom: 20,
-              borderRadius: 8,
-              backgroundColor: "lightgray",
-              shadowColor: "#000",
-              shadowOpacity: 0.2,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 5,
-            },
-          }}
+const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ item }) => {
+  const menuRef = useRef<MaterialMenu.Menu>(null);
+
+  const showMenu = () => menuRef.current?.show();
+  const hideMenu = () => menuRef.current?.hide();
+
+  const handleOpenLead = () => {
+    hideMenu();
+    openSalesforceOne(item.Id);
+  };
+
+  const handleNavigate = () => {
+    hideMenu();
+    openGoogleMaps(item.latitude, item.longitude);
+  };
+
+  return (
+    <View>
+      {/* Trigger */}
+      <TouchableOpacity onPress={showMenu}>
+        <Icon name="more-vertical" size={24} color="#4b5563" />
+      </TouchableOpacity>
+
+      {/* Menu */}
+      <MaterialMenu.Menu
+        ref={menuRef}
+        style={styles.menu}
+        animationDuration={150}
+        onRequestClose={hideMenu} // for Android
+        backHandler // ensures back button closes menu on Android
+        onHidden={() => menuRef.current?.hide()} // extra safety
+      >
+        <MaterialMenu.MenuItem
+          style={styles.optionRow}
+          onPress={handleOpenLead}
         >
-          <MenuOption onSelect={() => openSalesforceOne()}>
-            <Text style={styles.optionText}>Back TO SF</Text>
-          </MenuOption>
-          <MenuOption onSelect={() => handleStartNavigation(item)}>
-            <Text style={styles.optionText}>Google Maps</Text>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={[styles.optionText]}>Open Lead</Text>
+            <Fontisto
+              name="person"
+              size={18}
+              color="#4b5563"
+              style={{ position: "absolute", left: 110 }}
+            />
+          </View>
+        </MaterialMenu.MenuItem>
+
+        <View style={styles.separator} />
+
+        <MaterialMenu.MenuItem
+          style={styles.optionRow}
+          onPress={handleNavigate}
+        >
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={[styles.optionText, { flex: 1 }]}>Navigate</Text>
             <FontAwesome5
               name="directions"
               size={20}
               color="#6b7280"
-              onPress={() => handleStartNavigation(item)}
+              style={{ position: "absolute", left: 110 }}
             />
-          </MenuOption>
-        </MenuOptions>
-      </Menu>
+          </View>
+        </MaterialMenu.MenuItem>
+      </MaterialMenu.Menu>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignSelf: "center",
+  menu: {
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    minWidth: 160,
+    maxHeight: 200,
+    paddingVertical: 0, // menu items handle padding
+    elevation: 5,
+  },
+  optionRow: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between", // text left, icon right
   },
   optionText: {
     fontSize: 16,
-    paddingVertical: 6,
+    color: "#111827",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#e5e7eb",
+    marginHorizontal: 8,
   },
 });
 

@@ -22,6 +22,7 @@ import { LatLng, calculateRoute } from "../utils/routeUtils";
 import { Colors } from "../constants/colors";
 import NewLoader from "../components/NewLoader";
 import NewFlatlist from "../components/NexFlatlist";
+import { MenuProvider } from "react-native-popup-menu";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -243,13 +244,15 @@ export default function RoutePlanScreen() {
           </View>
 
           {meetings.length > 0 && (
-            <NewFlatlist
-              data={meetings}
-              setData={setMeetings}
-              onDragStart={() => setDragging(true)}
-              onDragEnd={() => setDragging(false)}
-              simultaneousHandlers={scrollRef} // crucial fix
-            />
+            <MenuProvider>
+              <NewFlatlist
+                data={meetings}
+                setData={setMeetings}
+                onDragStart={() => setDragging(true)}
+                onDragEnd={() => setDragging(false)}
+                simultaneousHandlers={scrollRef} // crucial fix
+              />
+            </MenuProvider>
           )}
 
           <Text style={[styles.subTitle, { marginVertical: 10 }]}>
