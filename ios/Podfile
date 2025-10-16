@@ -34,21 +34,25 @@ pre_install do |installer|
   # Mobile SDK pre install
   mobile_sdk_pre_install(installer)
 end
-
-
+ 
 post_install do |installer|
-  # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-  # Comment the following if you do not want the SDK to emit signpost events for instrumentation. Signposts are  enabled for non release version of the app.
+  # Salesforce Mobile SDK signposts
   signposts_post_install(installer)
 
-  # React native post install
-  react_native_post_install(
+  # React Native post install
+  if defined?($config) && $config[:reactNativePath]
+    react_native_post_install(
       installer,
       $config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-  )
+      :mac_catalyst_enabled => false
+    )
+  else
+    react_native_post_install(
+      installer,
+      :mac_catalyst_enabled => false
+    )
+  end
 
-  # Mobile SDK post install
+  # Salesforce Mobile SDK post install
   mobile_sdk_post_install(installer)
 end
