@@ -3,9 +3,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import RoutePlanScreen from "../screens/RoutePlanScreen";
 import { Alert, Linking } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { scale } from "react-native-size-matters";
 import { Colors } from "../constants/colors";
-import { openSalesforceOne } from "../helpers/helpers";
+import { openSalesforce,handleSalesforceLogout } from "../helpers/helpers";
 // import { AppStackParamList } from "./types";
 
 const Stack = createStackNavigator();
@@ -45,7 +46,15 @@ export default function AppNavigator() {
               name="arrow-back-outline"
               size={scale(24)}
               style={{ marginLeft: scale(10), color: "black" }}
-              onPress={openSalesforceOne}
+              onPress={openSalesforce}
+            />
+          ),
+            headerRight: () => (
+            <MaterialIcons
+              name="logout"
+              size={scale(24)}
+              style={{ marginRight: scale(10), color: "black" }}
+              onPress={handleSalesforceLogout}
             />
           ),
         }}

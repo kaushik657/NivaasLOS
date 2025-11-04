@@ -24,13 +24,16 @@ const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ item }) => {
 
   const handleOpenLead = () => {
     hideMenu();
-    openSalesforceOne(item.Id);
+    openSalesforceOne(item.id);
   };
 
   const handleNavigate = () => {
     hideMenu();
     openGoogleMaps(item.latitude, item.longitude);
   };
+
+  console.log("this is sthe object here",item);
+  
 
   return (
     <View>

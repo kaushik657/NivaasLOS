@@ -21,3 +21,16 @@ export const getAuthToken = async (): Promise<string | null> => {
     return null;
   }
 };
+
+export const clearAuthToken = async () => {
+  try {
+    const result = await Keychain.resetGenericPassword();
+    if (result) {
+      console.log("✅ Auth token cleared successfully");
+    } else {
+      console.warn("⚠️ No auth token found to clear");
+    }
+  } catch (error) {
+    console.error("❌ Error clearing auth token:", error);
+  }
+};
