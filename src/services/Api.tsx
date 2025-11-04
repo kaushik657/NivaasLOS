@@ -105,8 +105,10 @@ export const GetApplicationDetails = async (id: any) => {
 
 export const fetchTodayLeads = async () => {
   try {
-    const soql =
-      "SELECT Id, Name, Company, Status, CreatedDate,Location__c FROM Lead WHERE CreatedDate = TODAY";
+
+     const soql = `SELECT Id,ActivityDateTime,EndDateTime,Subject,What.Name, whatid, whoid FROM Event WHERE Type = 'Visit' AND ActivityDateTime = TODAY`;
+   
+     // const soql = "SELECT Id, Name, Company, Status, CreatedDate,Location__c FROM Lead WHERE CreatedDate = TODAY";
     const url = `${
       GlobalConfig.instanceUrl
     }/services/data/v60.0/query?q=${encodeURIComponent(soql)}`;
@@ -131,7 +133,37 @@ export const fetchTodayLeads = async () => {
 
     const data = await response.json();
     console.log("Today's Leads:", data.records);
-    return data.records;
+    const events = data.records;
+    if (!events.length) return [];
+   
+    const leadIds: string[] = [];
+      events.forEach((ev: { WhoId: string; }) => {
+      if (ev.WhoId?.startsWith('00Q')) leadIds.push(ev.WhoId);
+    });
+
+    let leads = [];
+    if (leadIds.length) {
+     const leadSoql = `SELECT Id, Name, Company, Status, CreatedDate,Location__c FROM Lead  WHERE Id IN ('${leadIds.join("','")}')`;
+      const leadUrl = `${
+        GlobalConfig.instanceUrl
+      }/services/data/v60.0/query?q=${encodeURIComponent(leadSoql)}`;
+         
+      const response = await fetch(leadUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // access token from OAuth
+        "Content-Type": "application/json",
+      },
+    });
+    
+        const responseData = await response.json();
+        console.log("response Data",responseData);
+
+        leads = responseData.records;
+      
+    }
+    
+    return leads;
   } catch (error) {
     console.error("Fetch today leads error:", error);
     return [];

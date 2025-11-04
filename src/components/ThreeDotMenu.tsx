@@ -58,7 +58,7 @@ const ThreeDotMenu: React.FC<ThreeDotMenuProps> = ({ item }) => {
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <Text style={[styles.optionText]}>Open Lead</Text>
+            <Text style={[styles.optionText]}>Open Record</Text>
             <Fontisto
               name="person"
               size={18}
