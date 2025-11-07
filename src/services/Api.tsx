@@ -137,11 +137,14 @@ export const fetchTodayLeads = async () => {
     if (!events.length) return [];
    
     const leadIds: string[] = [];
-      events.forEach((ev: { WhoId: string; }) => {
+    const applicationIds: string[] = [];
+      events.forEach((ev: { WhoId: string,WhatId:string }) => {
       if (ev.WhoId?.startsWith('00Q')) leadIds.push(ev.WhoId);
+      if (ev.WhatId?.startsWith('006')) applicationIds.push(ev.WhatId);
     });
 
     let leads = [];
+    let applications = [];
     if (leadIds.length) {
      const leadSoql = `SELECT Id, Name, Company, Status, CreatedDate,Location__c FROM Lead  WHERE Id IN ('${leadIds.join("','")}')`;
       const leadUrl = `${
@@ -157,13 +160,37 @@ export const fetchTodayLeads = async () => {
     });
     
         const responseData = await response.json();
-        console.log("response Data",responseData);
+        console.log("response Data",responseData.records);
 
         leads = responseData.records;
       
     }
+        if (applicationIds.length) {
+     const applicationSql = `SELECT Id, Name, StageName, CreatedDate, Location__c FROM Opportunity WHERE Id IN ('${applicationIds.join("','")}')`;
+      const applicationurl = `${
+        GlobalConfig.instanceUrl
+      }/services/data/v60.0/query?q=${encodeURIComponent(applicationSql)}`;
+
+      console.log("application sql ",applicationSql);
+      
+         
+      const response = await fetch(applicationurl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // access token from OAuth
+        "Content-Type": "application/json",
+      },
+    });
+    const applicationResponse = await response.json();
+        console.log("application response  Data",applicationResponse.records);
+
+        applications = applicationResponse.records;
+     
+      
+    }
     
-    return leads;
+  return [...leads, ...applications];
+
   } catch (error) {
     console.error("Fetch today leads error:", error);
     return [];
