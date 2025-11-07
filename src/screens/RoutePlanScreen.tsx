@@ -91,6 +91,11 @@ export default function RoutePlanScreen() {
 
           setMeetings(mappedLeads);
         }
+        else{
+          setMeetings([]);
+          setEstimatedTimeStr("--");
+          setTotalDistance("--");
+        }
       } catch (error) {
         console.log("Error in route plan:", error);
       } finally {
