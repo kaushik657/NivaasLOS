@@ -1,0 +1,10 @@
+diff --git a/node_modules/react-native-draggable-flatlist/babel.config.js b/node_modules/react-native-draggable-flatlist/babel.config.js
+index 8a4543d..8fbddb0 100644
+--- a/node_modules/react-native-draggable-flatlist/babel.config.js
++++ b/node_modules/react-native-draggable-flatlist/babel.config.js
+@@ -1,4 +1,4 @@
+ module.exports = {
+-  presets: ["module:metro-react-native-babel-preset"],
++  presets: ["module:@react-native/babel-preset"],
+   plugins: ["react-native-reanimated/plugin"],
+ };

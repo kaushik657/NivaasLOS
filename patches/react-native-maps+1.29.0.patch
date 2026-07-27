@@ -1,0 +1,243 @@
+diff --git a/node_modules/react-native-maps/android/.project b/node_modules/react-native-maps/android/.project
+new file mode 100644
+index 0000000..a21a301
+--- /dev/null
++++ b/node_modules/react-native-maps/android/.project
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>react-native-maps</name>
++	<comment>Project react-native-maps created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++	<filteredResources>
++		<filter>
++			<id>1784788598817</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
++</projectDescription>
+diff --git a/node_modules/react-native-maps/src/MapCallout.tsx b/node_modules/react-native-maps/src/MapCallout.tsx
+index 54a2b72..f0365f1 100644
+--- a/node_modules/react-native-maps/src/MapCallout.tsx
++++ b/node_modules/react-native-maps/src/MapCallout.tsx
+@@ -44,10 +44,10 @@ type NativeProps = MapCalloutProps;
+ export class MapCallout extends React.Component<MapCalloutProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   render() {
+     const {tooltip = false, alphaHitTest = false} = this.props;
+diff --git a/node_modules/react-native-maps/src/MapCalloutSubview.tsx b/node_modules/react-native-maps/src/MapCalloutSubview.tsx
+index 32d10ec..699e085 100644
+--- a/node_modules/react-native-maps/src/MapCalloutSubview.tsx
++++ b/node_modules/react-native-maps/src/MapCalloutSubview.tsx
+@@ -29,10 +29,10 @@ type NativeProps = MapCalloutSubviewProps;
+ export class MapCalloutSubview extends React.Component<MapCalloutSubviewProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+   render() {
+     const AIRMapCalloutSubview = this.getNativeComponent();
+     return (
+diff --git a/node_modules/react-native-maps/src/MapCircle.tsx b/node_modules/react-native-maps/src/MapCircle.tsx
+index ad03aa3..1870b0f 100644
+--- a/node_modules/react-native-maps/src/MapCircle.tsx
++++ b/node_modules/react-native-maps/src/MapCircle.tsx
+@@ -124,10 +124,10 @@ type NativeProps = MapCircleProps & {ref: React.RefObject<View | null>};
+ export class MapCircle extends React.Component<MapCircleProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   private circle: NativeProps['ref'];
+ 
+diff --git a/node_modules/react-native-maps/src/MapHeatmap.tsx b/node_modules/react-native-maps/src/MapHeatmap.tsx
+index 0dc3112..6131a2c 100644
+--- a/node_modules/react-native-maps/src/MapHeatmap.tsx
++++ b/node_modules/react-native-maps/src/MapHeatmap.tsx
+@@ -88,10 +88,10 @@ type NativeProps = Modify<
+ export class MapHeatmap extends React.Component<MapHeatmapProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   private heatmap: NativeProps['ref'];
+ 
+diff --git a/node_modules/react-native-maps/src/MapLocalTile.tsx b/node_modules/react-native-maps/src/MapLocalTile.tsx
+index 8911dee..00f3dbe 100644
+--- a/node_modules/react-native-maps/src/MapLocalTile.tsx
++++ b/node_modules/react-native-maps/src/MapLocalTile.tsx
+@@ -41,10 +41,10 @@ type NativeProps = MapLocalTileProps;
+ export class MapLocalTile extends React.Component<MapLocalTileProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   render() {
+     const AIRMapLocalTile = this.getNativeComponent();
+diff --git a/node_modules/react-native-maps/src/MapMarker.tsx b/node_modules/react-native-maps/src/MapMarker.tsx
+index 230c9e2..e988941 100644
+--- a/node_modules/react-native-maps/src/MapMarker.tsx
++++ b/node_modules/react-native-maps/src/MapMarker.tsx
+@@ -373,10 +373,10 @@ export type NativeProps = Modify<
+ export class MapMarker extends React.Component<MapMarkerProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   static Animated: Animated.AnimatedComponent<typeof MapMarker>;
+ 
+diff --git a/node_modules/react-native-maps/src/MapOverlay.tsx b/node_modules/react-native-maps/src/MapOverlay.tsx
+index 1db5d07..0b363f1 100644
+--- a/node_modules/react-native-maps/src/MapOverlay.tsx
++++ b/node_modules/react-native-maps/src/MapOverlay.tsx
+@@ -87,10 +87,10 @@ function normalizeBounds(bounds: [number, number][]): any {
+ export class MapOverlay extends React.Component<MapOverlayProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   static Animated: Animated.AnimatedComponent<typeof MapOverlay>;
+ 
+diff --git a/node_modules/react-native-maps/src/MapPolygon.tsx b/node_modules/react-native-maps/src/MapPolygon.tsx
+index a63e86a..d2fcdfa 100644
+--- a/node_modules/react-native-maps/src/MapPolygon.tsx
++++ b/node_modules/react-native-maps/src/MapPolygon.tsx
+@@ -150,10 +150,10 @@ type NativeProps = MapPolygonProps & {ref: React.RefObject<View | null>};
+ export class MapPolygon extends React.Component<MapPolygonProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   private polygon: NativeProps['ref'];
+ 
+diff --git a/node_modules/react-native-maps/src/MapPolyline.tsx b/node_modules/react-native-maps/src/MapPolyline.tsx
+index 20d9981..e833bbd 100644
+--- a/node_modules/react-native-maps/src/MapPolyline.tsx
++++ b/node_modules/react-native-maps/src/MapPolyline.tsx
+@@ -151,10 +151,10 @@ type NativeProps = MapPolylineProps & {ref: React.RefObject<View | null>};
+ export class MapPolyline extends React.Component<MapPolylineProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   private polyline: NativeProps['ref'];
+ 
+diff --git a/node_modules/react-native-maps/src/MapUrlTile.tsx b/node_modules/react-native-maps/src/MapUrlTile.tsx
+index 586daff..e9b77ef 100644
+--- a/node_modules/react-native-maps/src/MapUrlTile.tsx
++++ b/node_modules/react-native-maps/src/MapUrlTile.tsx
+@@ -150,10 +150,10 @@ type NativeProps = MapUrlTileProps;
+ export class MapUrlTile extends React.Component<MapUrlTileProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   render() {
+     const AIRMapUrlTile = this.getNativeComponent();
+diff --git a/node_modules/react-native-maps/src/MapWMSTile.tsx b/node_modules/react-native-maps/src/MapWMSTile.tsx
+index 17eca2f..5fb4877 100644
+--- a/node_modules/react-native-maps/src/MapWMSTile.tsx
++++ b/node_modules/react-native-maps/src/MapWMSTile.tsx
+@@ -129,10 +129,10 @@ type NativeProps = MapWMSTileProps;
+ export class MapWMSTile extends React.Component<MapWMSTileProps> {
+   // declaration only, as they are set through decorateMap
+   /// @ts-ignore
+-  context!: React.ContextType<typeof ProviderContext>;
+-  getNativeComponent!: () => NativeComponent<NativeProps>;
+-  getMapManagerCommand!: (name: string) => MapManagerCommand;
+-  getUIManagerCommand!: (name: string) => UIManagerCommand;
++  declare context: React.ContextType<typeof ProviderContext>;
++  declare getNativeComponent: () => NativeComponent<NativeProps>;
++  declare getMapManagerCommand: (name: string) => MapManagerCommand;
++  declare getUIManagerCommand: (name: string) => UIManagerCommand;
+ 
+   render() {
+     const AIRMapWMSTile = this.getNativeComponent();

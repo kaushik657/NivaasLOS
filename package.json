@@ -35,7 +35,7 @@
     "react-native-image-picker": "^8.2.1",
     "react-native-keychain": "^10.0.0",
     "react-native-loader-kit": "^3.0.0",
-    "react-native-maps": "1.24.3",
+    "react-native-maps": "^1.29.0",
     "react-native-material-menu": "^2.0.0",
     "react-native-popup-menu": "^0.18.0",
     "react-native-reanimated": "3.19.1",
