@@ -24,35 +24,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.niwas.los;
 
-import android.os.Bundle;
-import com.salesforce.androidsdk.reactnative.ui.SalesforceReactActivity;
+package com.niwas.los
 
-public class MainActivity extends SalesforceReactActivity {
+import android.os.Bundle
+import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
+import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.salesforce.androidsdk.reactnative.ui.SalesforceReactActivity
 
-	//react-native-screens override
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(null);
-	}
+class MainActivity : SalesforceReactActivity() {
 
-    /**
-     *
-     * @return true if you want login to happen when application launches
-     *         false otherwise
-     */
-	@Override
-	public boolean shouldAuthenticate() {
-		return true;
-	}
+  // react-native-screens override
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(null)
+  }
 
-	/**
-	 * Returns the name of the main component registered from JavaScript.
-	 * This is used to schedule rendering of the component.
-	 */
-	@Override
-	protected String getMainComponentName() {
-		return "NiwasLos";
-	}
+  /**
+   * Returns the name of the main component registered from JavaScript. This
+   * is used to schedule rendering of the component.
+   */
+  override fun getMainComponentName() = "NiwasLos"
+
+  /**
+   * Returns the instance of the [ReactActivityDelegate]. We use
+   * [DefaultReactActivityDelegate] which allows you to enable New
+   * Architecture with a single boolean flags [fabricEnabled]
+   */
+  override fun createReactActivityDelegate(): ReactActivityDelegate =
+      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  /**
+   * Determines if login should occur on application launch or not.
+   * @return True for login to occur on application launch, false otherwise
+   */
+  override fun shouldAuthenticate() = true
 }
